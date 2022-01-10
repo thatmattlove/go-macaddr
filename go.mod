@@ -1,4 +1,4 @@
-module github.com/thatmattlove/macaddr
+module github.com/thatmattlove/go-macaddr
 
 go 1.17
 

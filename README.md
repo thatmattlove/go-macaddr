@@ -3,7 +3,7 @@
     <code>macaddr</code>
 </h3>
 <br/>
-MAC Address & Prefix Library for Go
+MAC Address & Prefix Utility for Go
 <br/>
 <br/>
     <a href="https://github.com/thatmattlove/go-macaddr/actions?query=workflow%3Atest">
@@ -14,5 +14,5 @@ MAC Address & Prefix Library for Go
 ## Installation
 
 ```
-go get -u github.com/thatmattlove/macaddr
+go get -u github.com/thatmattlove/go-macaddr
 ```
