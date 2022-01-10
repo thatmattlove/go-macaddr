@@ -1,4 +1,4 @@
-package main
+package macaddr
 
 const MAC_BIT_LEN int = 48
 const MAC_BYTE_LEN int = 6

@@ -14,5 +14,5 @@ MAC Address & Prefix Utility for Go
 ## Installation
 
 ```
-go get -u github.com/thatmattlove/go-macaddr
+go get -d github.com/thatmattlove/go-macaddr
 ```
