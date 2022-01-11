@@ -26,10 +26,13 @@ func withColons(i string) string {
 func padMac(i string) string {
 	p := regexp.MustCompile(`[^0-9a-fA-F]+`)
 	r := p.ReplaceAllString(i, "")
-	return strings.ToLower(padRight(r, "0", MAC_HEX_LEN))
+	return strings.ToLower(padRight(r, "0", hexStrLen))
 }
 
-func formatted(fmtStr string, addr MACAddress) (f string) {
+func formatted(fmtStr string, addr *MACAddress) (f string) {
+	if addr == nil {
+		return "<nil>"
+	}
 	var r []string
 	offset := (4 - MAC_BIT_LEN) & 3
 	uc := addr.Integer() << offset
@@ -61,19 +64,24 @@ func baseMACAndMask(p *MACPrefix) (mac MACAddress, mask MACAddress) {
 }
 
 // String formats the MAC Address with colons, e.g. 'xx:xx:xx:xx:xx:xx'.
-func (m *MACAddress) String() string { return formatted(fmtColon, *m) }
+func (m *MACAddress) String() string { return formatted(fmtColon, m) }
 
 // Dots formats the MAC Address with dots, e.g. 'xxxx.xxxx.xxxx'.
-func (m *MACAddress) Dotted() string { return formatted(fmtDot, *m) }
+func (m *MACAddress) Dotted() string { return formatted(fmtDot, m) }
 
 // Dashes formats the MAC Address with dashes, e.g. 'xx-xx-xx-xx-xx-xx'.
-func (m *MACAddress) Dashes() string { return formatted(fmtDash, *m) }
+func (m *MACAddress) Dashes() string { return formatted(fmtDash, m) }
 
 // NoSeparators formats the MAC Address with no separators, e.g. 'xx-xx-xx-xx-xx-xx'.
-func (m *MACAddress) NoSeparators() string { return formatted(fmtNone, *m) }
+func (m *MACAddress) NoSeparators() string { return formatted(fmtNone, m) }
 
 // Integer returns an integer representation of a MAC Address.
-func (m *MACAddress) Integer() int { return byteArrayToInt(*m) }
+func (m *MACAddress) Integer() int {
+	if m == nil {
+		return 0
+	}
+	return byteArrayToInt(*m)
+}
 
 func (m *MACAddress) Mask(mask MACAddress) (o MACAddress) {
 	n := len(*m)

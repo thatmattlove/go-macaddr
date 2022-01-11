@@ -51,6 +51,14 @@ func Test_MACPrefix(t *testing.T) {
 			assert.Equal(t, r.PrefixLen(), p.int)
 		}
 	})
+	t.Run("MACPrefix.OUI() /24", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("01:23:45:00:00:00/24")
+		assert.Equal(t, "01:23:45", mp.OUI())
+	})
+	t.Run("MACPrefix.OUI() /28", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("01:23:45:00:00:00/28")
+		assert.Equal(t, "01:23:45:00:00:00/28", mp.OUI())
+	})
 }
 
 func Test_PrefixLength(t *testing.T) {

@@ -13,11 +13,11 @@ type MACPrefix struct {
 
 func (p *MACPrefix) String() string {
 	if p == nil {
-		return "<nil>"
+		return nilStr
 	}
 	bm, m := baseMACAndMask(p)
 	if bm == nil || m == nil {
-		return "<nil>"
+		return nilStr
 	}
 	l := prefixLength(m)
 	if l == -1 {
@@ -45,7 +45,21 @@ func (p *MACPrefix) Contains(mac MACAddress) bool {
 }
 
 func (p *MACPrefix) PrefixLen() int {
+	if p == nil {
+		return 0
+	}
 	return prefixLength(p.Mask)
+}
+
+func (p *MACPrefix) OUI() string {
+	if p == nil {
+		return nilStr
+	}
+	if p.PrefixLen() <= 24 {
+		s := p.String()
+		return s[:hexStrWithColonsLen/2]
+	}
+	return p.String()
 }
 
 func ParseMACPrefix(s string) (mac MACAddress, mp *MACPrefix, err error) {
