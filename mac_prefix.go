@@ -208,7 +208,7 @@ func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
 		a = aa
 		i = iii
 	}
-	mac, err := ParseMACAddr(a)
+	mac, err := ParseMACAddress(a)
 	if err != nil {
 		return nil, 0, err
 	}

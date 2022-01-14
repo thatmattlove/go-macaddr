@@ -10,7 +10,7 @@ import (
 func Test_MustParseMACPrefix(t *testing.T) {
 	t.Run("MustParseMACPrefix should panic", func(t *testing.T) {
 		assert.Panics(t, func() {
-			MustParseMACAddr("this should panic")
+			MustParseMACAddress("this should panic")
 		})
 	})
 }
@@ -36,7 +36,7 @@ func Test_MACPrefix(t *testing.T) {
 		assert.Equal(t, mp.String(), "01:23:45:00:00:00/24")
 	})
 	t.Run("MACPrefix.Contains()", func(t *testing.T) {
-		mc := MustParseMACAddr("01:23:45:ff:ee:dd")
+		mc := MustParseMACAddress("01:23:45:ff:ee:dd")
 		assert.Nil(t, err)
 		assert.True(t, mp.Contains(mc))
 	})
@@ -159,8 +159,8 @@ func ExampleMustParseMACPrefix() {
 
 func ExampleMACPrefix_Contains() {
 	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
-	mac1 := MustParseMACAddr("00:00:5e:00:53:ab")
-	mac2 := MustParseMACAddr("00:00:5f:00:53:ab")
+	mac1 := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac2 := MustParseMACAddress("00:00:5f:00:53:ab")
 	fmt.Println(macPrefix.Contains(mac1))
 	fmt.Println(macPrefix.Contains(mac2))
 	// Output:
