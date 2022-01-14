@@ -57,6 +57,7 @@ func padRight(str string, pad string, count int) string {
 }
 
 // DecToInt converts decimal string to integer.
+// Returns number, characters consumed, success.
 // See Golang internal: https://github.com/golang/go/blob/a59e33224e42d60a97fa720a45e1b74eb6aaa3d0/src/net/parse.go#L122
 func decToInt(s string) (n int, i int, ok bool) {
 	n = 0

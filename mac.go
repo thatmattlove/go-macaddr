@@ -49,20 +49,6 @@ func formatted(fmtStr string, addr *MACAddress) (f string) {
 	return
 }
 
-func baseMACAndMask(p *MACPrefix) (mac MACAddress, mask MACAddress) {
-	if mac = p.MAC; mac == nil {
-		mac = p.MAC
-		if len(mac) != MAC_BYTE_LEN {
-			return nil, nil
-		}
-	}
-	mask = p.Mask
-	if len(mac) != MAC_BYTE_LEN {
-		return nil, nil
-	}
-	return mac, mask
-}
-
 // String formats the MAC Address with colons, e.g. 'xx:xx:xx:xx:xx:xx'.
 func (m *MACAddress) String() string { return formatted(fmtColon, m) }
 
@@ -83,35 +69,36 @@ func (m *MACAddress) Integer() int {
 	return byteArrayToInt(*m)
 }
 
-func (m *MACAddress) Mask(mask MACAddress) (o MACAddress) {
+func (m *MACAddress) Mask(mask *MACAddress) *MACAddress {
 	n := len(*m)
-	if n != len(mask) {
+	if n != len(*mask) {
 		return nil
 	}
-	o = make(MACAddress, n)
+	mac := make(MACAddress, n)
 	mm := *m
+	mp := *mask
 	for i := 0; i < n; i++ {
-		o[i] = mm[i] & mask[i]
+		mac[i] = mm[i] & mp[i]
 	}
-	return
+	return &mac
 }
 
-func (m *MACAddress) Equal(o MACAddress) (r bool) {
-	c := bytes.Compare(*m, o)
+func (m *MACAddress) Equal(o *MACAddress) (r bool) {
+	c := bytes.Compare(*m, *o)
 	return c == 0
 }
 
-func FromBytes(one, two, three, four, five, six byte) (m MACAddress) {
-	m = make(MACAddress, MAC_BYTE_LEN)
+func FromBytes(one, two, three, four, five, six byte) (m *MACAddress) {
+	mac := make(MACAddress, MAC_BYTE_LEN)
 	for i, b := range []byte{one, two, three, four, five, six} {
-		m[i] = b
+		mac[i] = b
 	}
-	return m
+	return &mac
 }
 
-func FromByteArray(b [6]byte) (m MACAddress) { return FromBytes(b[0], b[1], b[2], b[3], b[4], b[5]) }
+func FromByteArray(b [6]byte) (m *MACAddress) { return FromBytes(b[0], b[1], b[2], b[3], b[4], b[5]) }
 
-func ParseMACAddr(i string) (o MACAddress, err error) {
+func ParseMACAddr(i string) (o *MACAddress, err error) {
 	if !validateHex(i) {
 		return nil, fmt.Errorf("'%v' contains non-hexadecimal characters", i)
 	}
@@ -119,7 +106,6 @@ func ParseMACAddr(i string) (o MACAddress, err error) {
 	if err != nil {
 		hw, err = net.ParseMAC(withColons(padMac(i)))
 		if err != nil {
-			fmt.Println(err)
 			return nil, err
 		}
 	}
@@ -127,7 +113,7 @@ func ParseMACAddr(i string) (o MACAddress, err error) {
 	return
 }
 
-func MustParseMACAddr(i string) (o MACAddress) {
+func MustParseMACAddr(i string) (o *MACAddress) {
 	o, err := ParseMACAddr(i)
 	if err != nil {
 		panic(err)

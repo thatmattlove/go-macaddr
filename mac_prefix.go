@@ -7,37 +7,62 @@ import (
 )
 
 type MACPrefix struct {
-	MAC  MACAddress // base MAC
-	Mask MACAddress
+	MAC  *MACAddress // base MAC
+	Mask *MACAddress
 }
 
 func (p *MACPrefix) String() string {
 	if p == nil {
 		return nilStr
 	}
-	bm, m := baseMACAndMask(p)
-	if bm == nil || m == nil {
+
+	if p.MAC == nil || p.Mask == nil {
 		return nilStr
 	}
-	l := prefixLength(m)
+	l := prefixLength(*p.Mask)
 	if l == -1 {
-		return bm.String() + "/" + m.String()
+		return p.MAC.String() + "/" + p.Mask.String()
 	}
 
-	return bm.String() + "/" + strconv.Itoa(l)
+	return p.MAC.String() + "/" + strconv.Itoa(l)
 }
 
-func (p *MACPrefix) Contains(mac MACAddress) bool {
-	bm, mask := baseMACAndMask(p)
+func (p *MACPrefix) Match(i string) (m *MACPrefix, e error) {
+	e = fmt.Errorf("'%v' is not contained within MACPrefix %s", i, p.String())
+	addr, l, err := parseMacAddrWithPrefixLen(i)
+	if err != nil {
+		return nil, err
+	}
+	pl := p.PrefixLen()
+
+	if l < pl {
+		return nil, e
+	}
+
+	if p.Contains(addr) {
+		return p, nil
+	}
+	return nil, e
+}
+
+func (p *MACPrefix) Contains(mac *MACAddress) bool {
+	if p == nil {
+		panic(fmt.Errorf("cannot check if MAC '%s' is contained within nil MACPrefix", mac.String()))
+	}
+	mask := *p.Mask
 	if x := mac; x != nil {
 		mac = x
 	}
-	l := len(mac)
+	bm := *p.MAC
+	im := *mac
+	l := len(im)
+
 	if l != len(bm) {
 		return false
 	}
+
 	for i := 0; i < l; i++ {
-		if bm[i]&mask[i] != mac[i]&mask[i] {
+		if bm[i]&mask[i] != im[i]&mask[i] {
 			return false
 		}
 	}
@@ -48,7 +73,7 @@ func (p *MACPrefix) PrefixLen() int {
 	if p == nil {
 		return 0
 	}
-	return prefixLength(p.Mask)
+	return prefixLength(*p.Mask)
 }
 
 func (p *MACPrefix) OUI() string {
@@ -62,28 +87,26 @@ func (p *MACPrefix) OUI() string {
 	return p.String()
 }
 
-func ParseMACPrefix(s string) (mac MACAddress, mp *MACPrefix, err error) {
-	err = nil
-	i := strings.IndexByte(s, '/')
-	if i < 0 {
-		return nil, nil, fmt.Errorf("'%v' is an invalid MAC prefix", s)
-	}
-	addr, mask := s[:i], s[i+1:]
-	mac, err = ParseMACAddr(addr)
+func ParseMACPrefix(s string) (mac *MACAddress, mpo *MACPrefix, err error) {
+	mac, l, err := parseMacAddrWithPrefixLen(s)
 	if err != nil {
 		return nil, nil, err
 	}
+	ls := fmt.Sprint(l)
 
-	n, i, ok := decToInt(mask)
-	if mac == nil || !ok || i != len(mask) || n < 0 || n > MAC_BIT_LEN {
+	n, i, ok := decToInt(ls)
+	if mac == nil || !ok || i != len(ls) || n < 0 || n > MAC_BIT_LEN {
 		return nil, nil, fmt.Errorf("'%v' is an invalid MAC prefix", s)
 	}
 	m := cidrMask(n, MAC_BIT_LEN)
-	mp = &MACPrefix{MAC: mac.Mask(m), Mask: m}
-	return mac, mp, err
+	var mp *MACPrefix = new(MACPrefix)
+	mp.MAC = mac.Mask(m)
+	mp.Mask = m
+	mpo = mp
+	return
 }
 
-func MustParseMACPrefix(s string) (mac MACAddress, mp *MACPrefix) {
+func MustParseMACPrefix(s string) (mac *MACAddress, mp *MACPrefix) {
 	mac, mp, err := ParseMACPrefix(s)
 	if err != nil {
 		panic(err)
@@ -94,14 +117,14 @@ func MustParseMACPrefix(s string) (mac MACAddress, mp *MACPrefix) {
 // cidrMask returns an MAC Address consisting of 'ones' 1 bits
 // followed by 0s up to a total length of 'bits' bits.
 // Adapted from: https://github.com/golang/go/blob/2639f2f79bda2c3a4e9ef7381ca7de14935e2a4a/src/net/ip.go#L77
-func cidrMask(ones, bits int) (m MACAddress) {
+func cidrMask(ones, bits int) *MACAddress {
 	if bits != MAC_BIT_LEN {
 		return nil
 	}
 	if ones < 0 || ones > bits {
 		return nil
 	}
-	m = make(MACAddress, MAC_BYTE_LEN)
+	m := make(MACAddress, MAC_BYTE_LEN)
 	n := uint(ones)
 	for i := 0; i < MAC_BYTE_LEN; i++ {
 		if n >= 8 {
@@ -112,7 +135,7 @@ func cidrMask(ones, bits int) (m MACAddress) {
 		m[i] = ^byte(0xff >> n)
 		n = 0
 	}
-	return m
+	return &m
 }
 
 // prefixLength is adapted from:
@@ -142,4 +165,31 @@ func prefixLength(mac MACAddress) int {
 		break
 	}
 	return n
+}
+
+func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
+	if !validateHex(s) {
+		err = fmt.Errorf("'%v' is an invalid MAC address or prefix", s)
+		return nil, 0, err
+	}
+	i := strings.IndexByte(s, '/')
+	a := s
+	if i < 0 {
+		i = 24
+	} else {
+		aa, ii := s[:i], s[i+1:]
+		iii, err := strconv.Atoi(ii)
+
+		if err != nil {
+			iii = 24
+		}
+		a = aa
+		i = iii
+	}
+	mac, err := ParseMACAddr(a)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return mac, i, nil
 }

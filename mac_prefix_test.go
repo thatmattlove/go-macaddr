@@ -28,6 +28,10 @@ func Test_ParseMACPrefix(t *testing.T) {
 func Test_MACPrefix(t *testing.T) {
 	s := "01:23:45:67:89:ab/24"
 	_, mp, err := ParseMACPrefix(s)
+	t.Run("Verify initial MACPrefix", func(t *testing.T) {
+		assert.Nil(t, err)
+		assert.NotNil(t, mp)
+	})
 	t.Run("MACPrefix.String()", func(t *testing.T) {
 		assert.Equal(t, mp.String(), "01:23:45:00:00:00/24")
 	})
@@ -59,6 +63,28 @@ func Test_MACPrefix(t *testing.T) {
 		_, mp := MustParseMACPrefix("01:23:45:00:00:00/28")
 		assert.Equal(t, "01:23:45:00:00:00/28", mp.OUI())
 	})
+	t.Run("MACPrefix.Match() 1", func(t *testing.T) {
+		m, e := mp.Match("01:23:45:67:89:ab")
+		assert.Nil(t, e)
+		assert.Equal(t, m.String(), mp.String())
+	})
+	t.Run("MACPrefix.Match() 2", func(t *testing.T) {
+		m, e := mp.Match("01:23:45")
+		assert.Nil(t, e)
+		assert.Equal(t, m.String(), mp.String())
+	})
+	t.Run("MACPrefix.Match() 3", func(t *testing.T) {
+		_, e := mp.Match("ba:98:76:54:32:01")
+		assert.NotNil(t, e)
+	})
+	t.Run("MACPrefix.Match() 4", func(t *testing.T) {
+		_, e := mp.Match("98:76:54")
+		assert.NotNil(t, e)
+	})
+	t.Run("MACPrefix.Match() 5", func(t *testing.T) {
+		_, e := mp.Match("01:23:45:67:89:ab/12")
+		assert.NotNil(t, e)
+	})
 }
 
 func Test_PrefixLength(t *testing.T) {
@@ -76,4 +102,34 @@ func Test_PrefixLength(t *testing.T) {
 			assert.Equal(t, p.int, prefixLength(p.MACAddress))
 		})
 	}
+}
+
+func Test_parsePrefixLen(t *testing.T) {
+	t.Run("parseMacAddrWithPrefixLen should error", func(t *testing.T) {
+		m, p, e := parseMacAddrWithPrefixLen("this should error")
+		assert.Nil(t, m)
+		assert.Equal(t, 0, p)
+		assert.NotNil(t, e)
+	})
+	t.Run("parseMacAddrWithPrefixLen 2", func(t *testing.T) {
+		m, p, e := parseMacAddrWithPrefixLen("01:23:45:67:89:ab/28")
+		ms := "01:23:45:67:89:ab"
+		assert.Equal(t, ms, m.String())
+		assert.Equal(t, 28, p)
+		assert.Nil(t, e)
+	})
+	t.Run("parseMacAddrWithPrefixLen 3", func(t *testing.T) {
+		m, p, e := parseMacAddrWithPrefixLen("00:00:00:00:00:00/0")
+		ms := "00:00:00:00:00:00"
+		assert.Equal(t, ms, m.String())
+		assert.Equal(t, 0, p)
+		assert.Nil(t, e)
+	})
+	t.Run("parseMacAddrWithPrefixLen 4", func(t *testing.T) {
+		m, p, e := parseMacAddrWithPrefixLen("01:23:45:67:89:ab")
+		ms := "01:23:45:67:89:ab"
+		assert.Equal(t, ms, m.String())
+		assert.Equal(t, 24, p)
+		assert.Nil(t, e)
+	})
 }
