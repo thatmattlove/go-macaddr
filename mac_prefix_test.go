@@ -133,3 +133,75 @@ func Test_parsePrefixLen(t *testing.T) {
 		assert.Nil(t, e)
 	})
 }
+
+func ExampleParseMACPrefix() {
+	mac, macPrefix, err := ParseMACPrefix("00:00:5e:00:53:00/24")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(mac.String())
+	fmt.Println(macPrefix.String())
+	fmt.Println(err)
+	// Output:
+	// 00:00:5e:00:53:00
+	// 00:00:5e:00:00:00/24
+	// <nil>
+}
+
+func ExampleMustParseMACPrefix() {
+	mac, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(mac.String())
+	fmt.Println(macPrefix.String())
+	// Output:
+	// 00:00:5e:00:53:00
+	// 00:00:5e:00:00:00/24
+}
+
+func ExampleMACPrefix_Contains() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	mac1 := MustParseMACAddr("00:00:5e:00:53:ab")
+	mac2 := MustParseMACAddr("00:00:5f:00:53:ab")
+	fmt.Println(macPrefix.Contains(mac1))
+	fmt.Println(macPrefix.Contains(mac2))
+	// Output:
+	// true
+	// false
+}
+
+func ExampleMACPrefix_Match() {
+	mac, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	match, err := macPrefix.Match("00:00:5e")
+	if err != nil {
+		// Input string was not a match.
+		panic(err)
+	}
+	fmt.Println(mac.String())
+	fmt.Println(match.String())
+	// Output:
+	// 00:00:5e:00:53:00
+	// 00:00:5e:00:00:00/24
+}
+
+func ExampleMACPrefix_OUI() {
+	_, macPrefix1 := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	_, macPrefix2 := MustParseMACPrefix("00:00:5e:00:53:00/28")
+	fmt.Println(macPrefix1.OUI())
+	fmt.Println(macPrefix2.OUI())
+	// Output:
+	// 00:00:5e
+	// 00:00:5e:00:00:00/28
+}
+
+func ExampleMACPrefix_PrefixLen() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.PrefixLen())
+	// Output:
+	// 24
+}
+
+func ExampleMACPrefix_String() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.String())
+	// Output:
+	// 00:00:5e:00:00:00/24
+}

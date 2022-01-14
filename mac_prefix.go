@@ -6,11 +6,53 @@ import (
 	"strings"
 )
 
+// MACPrefix represents a MAC Address prefix or range, e.g. 00:00:5e:00:00:00/24 (with a range of
+// 00:00:5e:00:00:00-00:00:5e:ff:ff:ff).
 type MACPrefix struct {
-	MAC  *MACAddress // base MAC
+	// MAC is the base MAC address of a prefix. For example, a MACPrefix of 00:00:5e:00:00:00/24
+	// would have a base MAC of 00:00:5e:00:00:00.
+	MAC *MACAddress
+	// Mask is the mask representation of the MACPrefix. For example, a MACPrefix of
+	// 00:00:5e:00:00:00/24 would have a Mask of ff:ff:ff:00:00:00.
 	Mask *MACAddress
 }
 
+// ParseMACPrefix attempts to parse an input string to a valid MACPrefix object.
+//
+// Return Values
+//
+// ParseMACPrefix returns the original input MAC Address as a valid MACAddress object, the
+// parsed MACPrefix object, and an error if parsing failed.
+func ParseMACPrefix(s string) (mac *MACAddress, mpo *MACPrefix, err error) {
+	mac, l, err := parseMacAddrWithPrefixLen(s)
+	if err != nil {
+		return nil, nil, err
+	}
+	ls := fmt.Sprint(l)
+
+	n, i, ok := decToInt(ls)
+	if mac == nil || !ok || i != len(ls) || n < 0 || n > _macBitLen {
+		return nil, nil, fmt.Errorf("'%v' is an invalid MAC prefix", s)
+	}
+	m := cidrMask(n, _macBitLen)
+	var mp *MACPrefix = new(MACPrefix)
+	mp.MAC = mac.Mask(m)
+	mp.Mask = m
+	mpo = mp
+	return
+}
+
+// MustParseMACPrefix operates identically to ParseMACPrefix, but panics upon parsing error
+// instead of returning the error. Most ideal for tests or pre-validated string input.
+func MustParseMACPrefix(s string) (mac *MACAddress, mp *MACPrefix) {
+	mac, mp, err := ParseMACPrefix(s)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+// String returns a colon-separated string representation of the MACPrefix object.
 func (p *MACPrefix) String() string {
 	if p == nil {
 		return _nilStr
@@ -27,6 +69,7 @@ func (p *MACPrefix) String() string {
 	return p.MAC.String() + "/" + strconv.Itoa(l)
 }
 
+// Match attempts to match the MACPrefix to an input string.
 func (p *MACPrefix) Match(i string) (m *MACPrefix, e error) {
 	e = fmt.Errorf("'%v' is not contained within MACPrefix %s", i, p.String())
 	addr, l, err := parseMacAddrWithPrefixLen(i)
@@ -45,6 +88,7 @@ func (p *MACPrefix) Match(i string) (m *MACPrefix, e error) {
 	return nil, e
 }
 
+// Contains determines if an input MACAddress is contained within this MACPrefix.
 func (p *MACPrefix) Contains(mac *MACAddress) bool {
 	if p == nil {
 		panic(fmt.Errorf("cannot check if MAC '%s' is contained within nil MACPrefix", mac.String()))
@@ -69,6 +113,7 @@ func (p *MACPrefix) Contains(mac *MACAddress) bool {
 	return true
 }
 
+// PrefixLen returns the prefix length of the MACPrefix as an integer.
 func (p *MACPrefix) PrefixLen() int {
 	if p == nil {
 		return 0
@@ -76,6 +121,7 @@ func (p *MACPrefix) PrefixLen() int {
 	return prefixLength(*p.Mask)
 }
 
+// OUI returns the Organizationally Unique Identifier (OUI) of a MACPrefix.
 func (p *MACPrefix) OUI() string {
 	if p == nil {
 		return _nilStr
@@ -85,33 +131,6 @@ func (p *MACPrefix) OUI() string {
 		return s[:_hexStrWithColonsLen/2]
 	}
 	return p.String()
-}
-
-func ParseMACPrefix(s string) (mac *MACAddress, mpo *MACPrefix, err error) {
-	mac, l, err := parseMacAddrWithPrefixLen(s)
-	if err != nil {
-		return nil, nil, err
-	}
-	ls := fmt.Sprint(l)
-
-	n, i, ok := decToInt(ls)
-	if mac == nil || !ok || i != len(ls) || n < 0 || n > _macBitLen {
-		return nil, nil, fmt.Errorf("'%v' is an invalid MAC prefix", s)
-	}
-	m := cidrMask(n, _macBitLen)
-	var mp *MACPrefix = new(MACPrefix)
-	mp.MAC = mac.Mask(m)
-	mp.Mask = m
-	mpo = mp
-	return
-}
-
-func MustParseMACPrefix(s string) (mac *MACAddress, mp *MACPrefix) {
-	mac, mp, err := ParseMACPrefix(s)
-	if err != nil {
-		panic(err)
-	}
-	return
 }
 
 // cidrMask returns an MAC Address consisting of 'ones' 1 bits
@@ -167,6 +186,9 @@ func prefixLength(mac MACAddress) int {
 	return n
 }
 
+// parseMacAddrWithPrefixLen operates similarly to ParseMACPrefix, however, it returns the
+// validated MAC address object and the prefix length as an integer. If no prefix is provided,
+// a /24 prefix length is assumed.
 func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
 	if !validateHex(s) {
 		err = fmt.Errorf("'%v' is an invalid MAC address or prefix", s)
