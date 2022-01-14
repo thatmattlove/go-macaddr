@@ -13,11 +13,11 @@ type MACPrefix struct {
 
 func (p *MACPrefix) String() string {
 	if p == nil {
-		return nilStr
+		return _nilStr
 	}
 
 	if p.MAC == nil || p.Mask == nil {
-		return nilStr
+		return _nilStr
 	}
 	l := prefixLength(*p.Mask)
 	if l == -1 {
@@ -78,11 +78,11 @@ func (p *MACPrefix) PrefixLen() int {
 
 func (p *MACPrefix) OUI() string {
 	if p == nil {
-		return nilStr
+		return _nilStr
 	}
 	if p.PrefixLen() <= 24 {
 		s := p.String()
-		return s[:hexStrWithColonsLen/2]
+		return s[:_hexStrWithColonsLen/2]
 	}
 	return p.String()
 }
@@ -95,10 +95,10 @@ func ParseMACPrefix(s string) (mac *MACAddress, mpo *MACPrefix, err error) {
 	ls := fmt.Sprint(l)
 
 	n, i, ok := decToInt(ls)
-	if mac == nil || !ok || i != len(ls) || n < 0 || n > MAC_BIT_LEN {
+	if mac == nil || !ok || i != len(ls) || n < 0 || n > _macBitLen {
 		return nil, nil, fmt.Errorf("'%v' is an invalid MAC prefix", s)
 	}
-	m := cidrMask(n, MAC_BIT_LEN)
+	m := cidrMask(n, _macBitLen)
 	var mp *MACPrefix = new(MACPrefix)
 	mp.MAC = mac.Mask(m)
 	mp.Mask = m
@@ -118,15 +118,15 @@ func MustParseMACPrefix(s string) (mac *MACAddress, mp *MACPrefix) {
 // followed by 0s up to a total length of 'bits' bits.
 // Adapted from: https://github.com/golang/go/blob/2639f2f79bda2c3a4e9ef7381ca7de14935e2a4a/src/net/ip.go#L77
 func cidrMask(ones, bits int) *MACAddress {
-	if bits != MAC_BIT_LEN {
+	if bits != _macBitLen {
 		return nil
 	}
 	if ones < 0 || ones > bits {
 		return nil
 	}
-	m := make(MACAddress, MAC_BYTE_LEN)
+	m := make(MACAddress, _macByteLen)
 	n := uint(ones)
-	for i := 0; i < MAC_BYTE_LEN; i++ {
+	for i := 0; i < _macByteLen; i++ {
 		if n >= 8 {
 			m[i] = 0xff
 			n -= 8

@@ -10,13 +10,6 @@ import (
 
 type MACAddress []byte
 
-const (
-	fmtDash  string = "xx-xx-xx-xx-xx-xx"
-	fmtDot   string = "xxxx.xxxx.xxxx"
-	fmtColon string = "xx:xx:xx:xx:xx:xx"
-	fmtNone  string = "xxxxxxxxxxxx"
-)
-
 func withColons(i string) string {
 	p := chunkStr(i, 2)
 	r := strings.Join(p, ":")
@@ -26,7 +19,7 @@ func withColons(i string) string {
 func padMac(i string) string {
 	p := regexp.MustCompile(`[^0-9a-fA-F]+`)
 	r := p.ReplaceAllString(i, "")
-	return strings.ToLower(padRight(r, "0", hexStrLen))
+	return strings.ToLower(padRight(r, "0", _hexStrLen))
 }
 
 func formatted(fmtStr string, addr *MACAddress) (f string) {
@@ -34,12 +27,12 @@ func formatted(fmtStr string, addr *MACAddress) (f string) {
 		return "<nil>"
 	}
 	var r []string
-	offset := (4 - MAC_BIT_LEN) & 3
+	offset := (4 - _macBitLen) & 3
 	uc := addr.Integer() << offset
 	for _, ch := range reverseString(fmtStr) {
 		if ch == 'x' {
 			n := uc & 0xf
-			r = append(r, HEX_DIGITS[n])
+			r = append(r, _hexDigits[n])
 			uc >>= 4
 		} else {
 			r = append(r, string(ch))
@@ -50,16 +43,16 @@ func formatted(fmtStr string, addr *MACAddress) (f string) {
 }
 
 // String formats the MAC Address with colons, e.g. 'xx:xx:xx:xx:xx:xx'.
-func (m *MACAddress) String() string { return formatted(fmtColon, m) }
+func (m *MACAddress) String() string { return formatted(_fmtColon, m) }
 
 // Dots formats the MAC Address with dots, e.g. 'xxxx.xxxx.xxxx'.
-func (m *MACAddress) Dotted() string { return formatted(fmtDot, m) }
+func (m *MACAddress) Dotted() string { return formatted(_fmtDot, m) }
 
 // Dashes formats the MAC Address with dashes, e.g. 'xx-xx-xx-xx-xx-xx'.
-func (m *MACAddress) Dashes() string { return formatted(fmtDash, m) }
+func (m *MACAddress) Dashes() string { return formatted(_fmtDash, m) }
 
 // NoSeparators formats the MAC Address with no separators, e.g. 'xx-xx-xx-xx-xx-xx'.
-func (m *MACAddress) NoSeparators() string { return formatted(fmtNone, m) }
+func (m *MACAddress) NoSeparators() string { return formatted(_fmtNone, m) }
 
 // Integer returns an integer representation of a MAC Address.
 func (m *MACAddress) Integer() int {
@@ -89,7 +82,7 @@ func (m *MACAddress) Equal(o *MACAddress) (r bool) {
 }
 
 func FromBytes(one, two, three, four, five, six byte) (m *MACAddress) {
-	mac := make(MACAddress, MAC_BYTE_LEN)
+	mac := make(MACAddress, _macByteLen)
 	for i, b := range []byte{one, two, three, four, five, six} {
 		mac[i] = b
 	}
