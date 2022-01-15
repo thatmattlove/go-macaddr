@@ -55,10 +55,7 @@ func MaskFromPrefixLen(l int) *MACAddress {
 		} else {
 			str = string(bs[i-8 : i])
 		}
-		v, err := strconv.ParseUint(str, 2, 8)
-		if err != nil {
-			panic(err)
-		}
+		v, _ := strconv.ParseUint(str, 2, 8)
 		ba = append([]byte{byte(v)}, ba...)
 	}
 	return FromByteArray(ba)

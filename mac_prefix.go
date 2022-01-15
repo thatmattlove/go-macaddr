@@ -63,10 +63,9 @@ func (p *MACPrefix) String() string {
 	}
 	l := prefixLength(*p.Mask)
 	if l == -1 {
-		return p.MAC.String() + "/" + p.Mask.String()
+		return fmt.Sprintf("%s/%s", p.MAC.String(), p.Mask.String())
 	}
-
-	return p.MAC.String() + "/" + strconv.Itoa(l)
+	return fmt.Sprintf("%s/%d", p.MAC.String(), l)
 }
 
 // Match attempts to match the MACPrefix to an input string.
