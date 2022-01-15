@@ -75,9 +75,8 @@ func (p *MACPrefix) Match(i string) (m *MACPrefix, e error) {
 	if err != nil {
 		return nil, err
 	}
-	pl := p.PrefixLen()
 
-	if l < pl {
+	if l < p.PrefixLen() {
 		return nil, e
 	}
 
@@ -163,7 +162,7 @@ func prefixLength(mac MACAddress) int {
 
 // parseMacAddrWithPrefixLen operates similarly to ParseMACPrefix, however, it returns the
 // validated MAC address object and the prefix length as an integer. If no prefix is provided,
-// a /24 prefix length is assumed.
+// a /48 prefix length is assumed.
 func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
 	if !validateHex(s) {
 		err = fmt.Errorf("'%v' is an invalid MAC address or prefix", s)
@@ -172,13 +171,13 @@ func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
 	i := strings.IndexByte(s, '/')
 	a := s
 	if i < 0 {
-		i = 24
+		i = _macBitLen
 	} else {
 		aa, ii := s[:i], s[i+1:]
 		iii, err := strconv.Atoi(ii)
 
 		if err != nil {
-			iii = 24
+			iii = _macBitLen
 		}
 		a = aa
 		i = iii
