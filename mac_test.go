@@ -31,27 +31,42 @@ func Test_ParseMACAddress(t *testing.T) {
 		{"01-23-45-67", "01:23:45:67:00:00"},
 	}
 	for i, p := range tests {
-		t.Run(fmt.Sprintf("Parse MAC '%d'", i+1), func(t *testing.T) {
-			r := MustParseMACAddress(p[0])
+		t.Run(fmt.Sprintf("ParseMACAddress '%d'", i+1), func(t *testing.T) {
 			e := p[1]
+			r, err := ParseMACAddress(p[0])
+			assert.Nil(t, err)
 			assert.Equal(t, r.String(), e)
 		})
 	}
+	t.Run("ParseMACAddress returns error", func(t *testing.T) {
+		_, err := ParseMACAddress("0123.4567.89az")
+		assert.NotNil(t, err)
+	})
 }
 
 func Test_MACAddress(t *testing.T) {
 	s := "01:23:45:67:89:ab"
 	m, err := ParseMACAddress(s)
 	assert.Nil(t, err)
-	t.Run("Integer()", func(t *testing.T) {
+	t.Run("Int() returns int", func(t *testing.T) {
 		i := m.Int()
 		assert.Equal(t, i, 1250999896491)
 	})
-	t.Run("Mask()", func(t *testing.T) {
+	t.Run("Int() returns 0", func(t *testing.T) {
+		var m *MACAddress
+		i := m.Int()
+		assert.Equal(t, i, 0)
+	})
+	t.Run("Mask() works properly", func(t *testing.T) {
 		macOut := "01:23:45:00:00:00"
 		maskIn := MustParseMACAddress("ff:ff:ff:00:00:00")
 		maskOut := m.Mask(maskIn)
 		assert.Equal(t, macOut, maskOut.String())
+	})
+	t.Run("Mask() returns nil", func(t *testing.T) {
+		maskIn := MACAddress{}
+		maskOut := m.Mask(&maskIn)
+		assert.Nil(t, maskOut)
 	})
 	t.Run("MACAddress.Equal()", func(t *testing.T) {
 		et := MustParseMACAddress(s)
@@ -61,6 +76,10 @@ func Test_MACAddress(t *testing.T) {
 	})
 	t.Run("MACAddress.String()", func(t *testing.T) {
 		assert.Equal(t, m.String(), s)
+	})
+	t.Run("MACAddress.String() returns nil", func(t *testing.T) {
+		var m *MACAddress
+		assert.Equal(t, _nilStr, m.String())
 	})
 	t.Run("MACAddress.Dots()", func(t *testing.T) {
 		assert.Equal(t, m.Dots(), "0123.4567.89ab")

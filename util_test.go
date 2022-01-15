@@ -14,6 +14,14 @@ func Test_chunkStr(t *testing.T) {
 		e := []string{"abc", "def", "hij"}
 		assert.True(t, reflect.DeepEqual(r, e))
 	})
+	t.Run("chunkStr returns empty 1", func(t *testing.T) {
+		r := chunkStr("", 0)
+		assert.Len(t, r, 0)
+	})
+	t.Run("chunkStr returns empty 2", func(t *testing.T) {
+		r := chunkStr("slice", 1)
+		assert.Len(t, r, 5)
+	})
 }
 
 func Test_padRight(t *testing.T) {
@@ -56,12 +64,19 @@ func Test_decToInt(t *testing.T) {
 		{"1024", 1024},
 	}
 	for i, p := range tests {
-		t.Run(fmt.Sprintf("DecToInt %d", i), func(t *testing.T) {
-			n, _, ok := decToInt(p.string)
+		t.Run(fmt.Sprintf("decToInt %d", i), func(t *testing.T) {
+			n, c, ok := decToInt(p.string)
 			assert.True(t, ok)
 			assert.Equal(t, n, p.int)
+			assert.Equal(t, len(p.string), c)
 		})
 	}
+	t.Run("decToInt Big", func(t *testing.T) {
+		n, c, ok := decToInt("16777215")
+		assert.False(t, ok)
+		assert.Equal(t, 7, c)
+		assert.Equal(t, _big, n)
+	})
 }
 
 func Test_byteArrayToInt(t *testing.T) {
