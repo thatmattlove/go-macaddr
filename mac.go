@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"net"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -159,32 +158,4 @@ func (m *MACAddress) OUI(l ...int) string {
 		return s[:_hexStrWithColonsLen/2]
 	}
 	return fmt.Sprintf("%s/%d", mm.String(), pl)
-}
-
-// createFmtString parses an input string to replace all alphanumeric characters with 'x', so that
-// any valid MAC Address string can be used as a template.
-func createFmtString(s string) (f string) {
-	p := regexp.MustCompile(`[a-zA-Z0-9]`)
-	f = strings.Map(func(r rune) rune {
-		if p.MatchString(string(r)) {
-			return 'x'
-		}
-		return r
-	}, s)
-	return
-}
-
-// padMAC right-pads an input string with zeros to guarantee the string length is 12. For example,
-// 012345 becomes 012345000000.
-func padMAC(i string) string {
-	p := regexp.MustCompile(`[^0-9a-fA-F]+`)
-	r := p.ReplaceAllString(i, "")
-	return strings.ToLower(padRight(r, "0", _hexStrLen))
-}
-
-// withColons chunks an input string into n parts of 2 characters, and joins them with colons. For
-// example, 0123456789ab becomes 01:23:45:67:89:ab.
-func withColons(i string) string {
-	p := chunkStr(i, 2)
-	return strings.Join(p, ":")
 }

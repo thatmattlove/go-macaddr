@@ -35,6 +35,18 @@ func Test_padRight(t *testing.T) {
 		e := "12345"
 		assert.True(t, reflect.DeepEqual(r, e))
 	})
+
+}
+
+func Test_padMAC(t *testing.T) {
+	t.Run("padMAC works", func(t *testing.T) {
+		r := padMAC("012345")
+		assert.Equal(t, "012345000000", r)
+	})
+	t.Run("padMAC invalids", func(t *testing.T) {
+		r := padMAC("0x1y2z3")
+		assert.Equal(t, "012300000000", r)
+	})
 }
 
 func Test_reverseString(t *testing.T) {
@@ -94,5 +106,16 @@ func Test_validateHex(t *testing.T) {
 	t.Run("validateHex true", func(t *testing.T) {
 		f := validateHex("01:23:45:67:89:ab")
 		assert.True(t, f)
+	})
+}
+
+func Test_createFmtString(t *testing.T) {
+	t.Run("createFmtString 1", func(t *testing.T) {
+		r := createFmtString("01:23:45:67:89:ab")
+		assert.Equal(t, "xx:xx:xx:xx:xx:xx", r)
+	})
+	t.Run("createFmtString", func(t *testing.T) {
+		r := createFmtString("0123.45:67-89ab")
+		assert.Equal(t, "xxxx.xx:xx-xxxx", r)
 	})
 }

@@ -152,17 +152,6 @@ func Test_FromByteArray(t *testing.T) {
 	})
 }
 
-func Test_createFmtString(t *testing.T) {
-	t.Run("createFmtString 1", func(t *testing.T) {
-		r := createFmtString("01:23:45:67:89:ab")
-		assert.Equal(t, "xx:xx:xx:xx:xx:xx", r)
-	})
-	t.Run("createFmtString", func(t *testing.T) {
-		r := createFmtString("0123.45:67-89ab")
-		assert.Equal(t, "xxxx.xx:xx-xxxx", r)
-	})
-}
-
 func ExampleParseMACAddress() {
 	mac, err := ParseMACAddress("00:00:5e:00:53:ab")
 	if err != nil {
