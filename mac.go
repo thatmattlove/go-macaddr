@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -36,6 +37,31 @@ func MustParseMACAddress(i string) (o *MACAddress) {
 		panic(err)
 	}
 	return
+}
+
+// MaskFromPrefixLen creates a MACAddress mask from a prefix bit length. For example, a prefix
+// length of 24 would return MAC Address ff:ff:ff:00:00:00.
+func MaskFromPrefixLen(l int) *MACAddress {
+	if l > _macBitLen {
+		return &MACAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+	}
+	bs := strings.Repeat("1", l) + strings.Repeat("0", _macBitLen-l)
+	var ba []byte
+	var str string
+
+	for i := len(bs); i > 0; i -= 8 {
+		if i-8 < 0 {
+			str = string(bs[0:i])
+		} else {
+			str = string(bs[i-8 : i])
+		}
+		v, err := strconv.ParseUint(str, 2, 8)
+		if err != nil {
+			panic(err)
+		}
+		ba = append([]byte{byte(v)}, ba...)
+	}
+	return FromByteArray(ba)
 }
 
 // Create a MACAddress object directly from bytes.
@@ -116,6 +142,26 @@ func (m *MACAddress) Format(f string) string {
 		}
 	}
 	return reverseString(strings.Join(p, ""))
+}
+
+// OUI returns the Organizationally Unique Identifier (OUI) of a MACAddress. If a prefix length is
+// provided, the MACAddress will be masked with this prefix length. If no prefix length is
+// provided, a 24 bit length is assumed.
+func (m *MACAddress) OUI(l ...int) string {
+	pl := 24
+	if len(l) > 0 {
+		pl = l[0]
+	}
+	if m == nil {
+		return _nilStr
+	}
+	mm := m.Mask(MaskFromPrefixLen(pl))
+
+	if pl <= 24 {
+		s := mm.String()
+		return s[:_hexStrWithColonsLen/2]
+	}
+	return fmt.Sprintf("%s/%d", mm.String(), pl)
 }
 
 // createFmtString parses an input string to replace all alphanumeric characters with 'x', so that

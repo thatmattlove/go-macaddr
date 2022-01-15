@@ -34,7 +34,7 @@ func ParseMACPrefix(s string) (mac *MACAddress, mpo *MACPrefix, err error) {
 	if mac == nil || !ok || i != len(ls) || n < 0 || n > _macBitLen {
 		return nil, nil, fmt.Errorf("'%v' is an invalid MAC prefix", s)
 	}
-	m := cidrMask(n, _macBitLen)
+	m := MaskFromPrefixLen(n)
 	var mp *MACPrefix = new(MACPrefix)
 	mp.MAC = mac.Mask(m)
 	mp.Mask = m
@@ -131,30 +131,6 @@ func (p *MACPrefix) OUI() string {
 		return s[:_hexStrWithColonsLen/2]
 	}
 	return p.String()
-}
-
-// cidrMask returns an MAC Address consisting of 'ones' 1 bits
-// followed by 0s up to a total length of 'bits' bits.
-// Adapted from: https://github.com/golang/go/blob/2639f2f79bda2c3a4e9ef7381ca7de14935e2a4a/src/net/ip.go#L77
-func cidrMask(ones, bits int) *MACAddress {
-	if bits != _macBitLen {
-		return nil
-	}
-	if ones < 0 || ones > bits {
-		return nil
-	}
-	m := make(MACAddress, _macByteLen)
-	n := uint(ones)
-	for i := 0; i < _macByteLen; i++ {
-		if n >= 8 {
-			m[i] = 0xff
-			n -= 8
-			continue
-		}
-		m[i] = ^byte(0xff >> n)
-		n = 0
-	}
-	return &m
 }
 
 // prefixLength is adapted from:

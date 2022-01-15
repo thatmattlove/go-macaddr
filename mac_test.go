@@ -90,6 +90,42 @@ func Test_MACAddress(t *testing.T) {
 	t.Run("MACAddress.NoSeparators()", func(t *testing.T) {
 		assert.Equal(t, m.NoSeparators(), "0123456789ab")
 	})
+	t.Run("MACAddress.OUI() 1", func(t *testing.T) {
+		oui := m.OUI()
+		assert.Equal(t, "01:23:45", oui)
+	})
+	t.Run("MACAddress.OUI() 2", func(t *testing.T) {
+		oui := m.OUI(24)
+		assert.Equal(t, "01:23:45", oui)
+	})
+	t.Run("MACAddress.OUI() 3", func(t *testing.T) {
+		m := MustParseMACAddress("00:55:DA:80:01:23")
+		oui := m.OUI(28)
+		assert.Equal(t, "00:55:da:80:00:00/28", oui)
+	})
+	t.Run("MACAddress.OUI() nil", func(t *testing.T) {
+		var m *MACAddress
+		oui := m.OUI()
+		assert.Equal(t, _nilStr, oui)
+	})
+}
+
+func Test_MaskFromPrefixLen(t *testing.T) {
+	t.Run("MaskFromPrefixLen 1", func(t *testing.T) {
+		m := MaskFromPrefixLen(24)
+		e := &MACAddress{0xff, 0xff, 0xff, 0, 0, 0}
+		assert.Equal(t, e, m)
+	})
+	t.Run("MaskFromPrefixLen 2", func(t *testing.T) {
+		m := MaskFromPrefixLen(28)
+		e := &MACAddress{0xff, 0xff, 0xff, 0xf0, 0, 0}
+		assert.Equal(t, e, m)
+	})
+	t.Run("MaskFromPrefixLen handle too large", func(t *testing.T) {
+		m := MaskFromPrefixLen(1000)
+		e := &MACAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+		assert.Equal(t, e, m)
+	})
 }
 
 func Test_FromBytes(t *testing.T) {
@@ -157,6 +193,14 @@ func ExampleFromByteArray() {
 	// Output:
 	// 00:00:5e:00:53:ab
 }
+
+func ExampleMaskFromPrefixLen() {
+	mask := MaskFromPrefixLen(24)
+	fmt.Println(mask.String())
+	// Output:
+	// ff:ff:ff:00:00:00
+}
+
 func ExampleMACAddress_String() {
 	mac := MustParseMACAddress("00:00:5e:00:53:ab")
 	fmt.Println(mac.String())
@@ -218,4 +262,12 @@ func ExampleMACAddress_Format() {
 	fmt.Println(formatted)
 	// Output:
 	// 00$$00_-_5e@00=53.ab
+}
+
+func ExampleMACAddress_OUI() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	oui := mac.OUI()
+	fmt.Println(oui)
+	// Output:
+	// 00:00:5e
 }
