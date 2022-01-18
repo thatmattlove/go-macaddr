@@ -2,6 +2,7 @@ package macaddr
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -129,6 +130,51 @@ func (p *MACPrefix) OUI() string {
 		return s[:_hexStrWithColonsLen/2]
 	}
 	return p.String()
+}
+
+// First returns the first MAC Address in a MACPrefix.
+func (p *MACPrefix) First() (mac *MACAddress) {
+	if p == nil {
+		return nil
+	}
+	return p.MAC
+}
+
+// Last returns the last MAC Address in a MACPrefix.
+func (p *MACPrefix) Last() (mac *MACAddress) {
+	if p == nil {
+		return nil
+	}
+	last := make([]byte, len(*p.MAC))
+	r := reverseBytes(*p.Mask)
+	for i, b := range *p.MAC {
+		last[i] = b + r[i]
+	}
+	mac = FromByteArray(last)
+	return
+}
+
+// Count returns the number of MAC Addresses in a MACPrefix.
+func (p *MACPrefix) Count() int {
+	if p == nil {
+		return 0
+	}
+	exp := _macBitLen - p.PrefixLen()
+
+	if exp == 0 {
+		return 1
+	}
+	c := int(math.Pow(2, float64(exp)))
+	return c
+}
+
+// WildcardMask returns a MACAddress object of the wildcard mask of the MACPrefix.
+func (p *MACPrefix) WildcardMask() (mask *MACAddress) {
+	if p == nil {
+		return nil
+	}
+	mask = FromByteArray(reverseBytes(*p.Mask))
+	return
 }
 
 // prefixLength is adapted from:

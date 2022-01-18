@@ -2,6 +2,7 @@ package macaddr
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -140,6 +141,57 @@ func Test_MACPrefix(t *testing.T) {
 		assert.Nil(t, m)
 		assert.NotNil(t, e)
 	})
+	t.Run("MACPrefix.Start() nil prefix", func(t *testing.T) {
+		var mp *MACPrefix
+		assert.Nil(t, mp.Last())
+	})
+	t.Run("MACPrefix.First() 1", func(t *testing.T) {
+		e := MustParseMACAddress("01:23:45:00:00:00")
+		l := mp.First()
+		assert.Equal(t, e, l)
+	})
+	t.Run("MACPrefix.Last() nil prefix", func(t *testing.T) {
+		var mp *MACPrefix
+		assert.Nil(t, mp.Last())
+	})
+	t.Run("MACPrefix.Last() 1", func(t *testing.T) {
+		e := MustParseMACAddress("01:23:45:ff:ff:ff")
+		l := mp.Last()
+		assert.Equal(t, e, l)
+	})
+	t.Run("MACPrefix.Count() nil prefix", func(t *testing.T) {
+		var mp *MACPrefix
+		assert.Equal(t, 0, mp.Count())
+	})
+	t.Run("MACPrefix.Count() /48", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("01:23:45:67:89:ab/48")
+		assert.Equal(t, 1, mp.Count())
+	})
+	t.Run("MACPrefix.Count() /24", func(t *testing.T) {
+		assert.Equal(t, 16_777_216, mp.Count())
+	})
+	t.Run("MACPrefix.Count() /28", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("01:23:45:67:89:ab/28")
+		assert.Equal(t, 1_048_576, mp.Count())
+	})
+	t.Run("MACPrefix.Count() All MACs", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("00:00:00:00:00:00/0")
+		e := int(math.Pow(2, 48))
+		assert.Equal(t, e, mp.Count())
+	})
+	t.Run("MACPrefix.WildcardMask() nil prefix", func(t *testing.T) {
+		var mp *MACPrefix
+		assert.Nil(t, mp.WildcardMask())
+	})
+	t.Run("MACPrefix.WildcardMask() 1", func(t *testing.T) {
+		e := MustParseMACAddress("00:00:00:ff:ff:ff")
+		assert.Equal(t, e, mp.WildcardMask())
+	})
+	t.Run("MACPrefix.WildcardMask() 2", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("01:23:45:67:89:ab/28")
+		e := MustParseMACAddress("00:00:f0:ff:ff:ff")
+		assert.Equal(t, e, mp.WildcardMask())
+	})
 }
 
 func Test_PrefixLength(t *testing.T) {
@@ -212,6 +264,20 @@ func ExampleMustParseMACPrefix() {
 	// 00:00:5e:00:00:00/24
 }
 
+func ExampleMACPrefix_MAC() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.MAC)
+	// Output:
+	// 00:00:5e:00:00:00
+}
+
+func ExampleMACPrefix_Mask() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.Mask)
+	// Output:
+	// ff:ff:ff:00:00:00
+}
+
 func ExampleMACPrefix_Contains() {
 	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
 	mac1 := MustParseMACAddress("00:00:5e:00:53:ab")
@@ -259,4 +325,32 @@ func ExampleMACPrefix_String() {
 	fmt.Println(macPrefix.String())
 	// Output:
 	// 00:00:5e:00:00:00/24
+}
+
+func ExampleMACPrefix_Count() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.Count())
+	// Output:
+	// 16777216
+}
+
+func ExampleMACPrefix_First() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.First())
+	// Output:
+	// 00:00:5e:00:00:00
+}
+
+func ExampleMACPrefix_Last() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.Last())
+	// Output:
+	// 00:00:5e:ff:ff:ff
+}
+
+func ExampleMACPrefix_WildcardMask() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/24")
+	fmt.Println(macPrefix.WildcardMask())
+	// Output:
+	// 00:00:00:ff:ff:ff
 }

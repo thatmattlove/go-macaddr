@@ -65,6 +65,20 @@ func Test_reverseString(t *testing.T) {
 	}
 }
 
+func Test_reverseBytes(t *testing.T) {
+	t.Run("reverseBytes 1", func(t *testing.T) {
+		b := []byte{0xff, 0xfe, 255, 1, 0}
+		e := []byte{0, 1, 255, 0xfe, 0xff}
+		assert.Equal(t, e, reverseBytes(b))
+	})
+
+	t.Run("reverseBytes empty", func(t *testing.T) {
+		b := []byte{}
+		e := []byte{}
+		assert.Equal(t, e, reverseBytes(b))
+	})
+}
+
 func Test_decToInt(t *testing.T) {
 	type pair = struct {
 		string

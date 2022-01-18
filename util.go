@@ -93,6 +93,18 @@ func reverseString(i string) (o string) {
 	return
 }
 
+// reverseString reverses a string. For example, "abc" becomes "cba".
+func reverseBytes(i []byte) []byte {
+	if len(i) == 0 {
+		return i
+	}
+	o := []byte{}
+	for idx := len(i) - 1; idx >= 0; idx-- {
+		o = append(o, i[idx])
+	}
+	return o
+}
+
 // validateHex ensures all alphanumeric characters in a string are valid hexadecimal characters.
 // For example, "abcdef" would return true, but "abcdefg" would return false.
 func validateHex(i string) (o bool) {
