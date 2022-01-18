@@ -87,7 +87,7 @@ func (m *MACAddress) Dashes() string { return m.Format(_fmtDash) }
 func (m *MACAddress) NoSeparators() string { return m.Format(_fmtNone) }
 
 // Int returns an integer representation of a MAC Address.
-func (m *MACAddress) Int() int {
+func (m *MACAddress) Int() int64 {
 	if m == nil {
 		return 0
 	}
@@ -104,6 +104,44 @@ func (m *MACAddress) ByteString() string {
 		bsa = append(bsa, fmt.Sprint(b))
 	}
 	return fmt.Sprintf("{%s}", strings.Join(bsa, ","))
+}
+
+func (m *MACAddress) Clone() *MACAddress {
+	if m == nil {
+		return nil
+	}
+	return FromBytes((*m)[0], (*m)[1], (*m)[2], (*m)[3], (*m)[4], (*m)[5])
+}
+
+// move goes forward or backwards one address from the current. To go backwards, use -1.
+func (m *MACAddress) move(p int) *MACAddress {
+	if m == nil {
+		return nil
+	}
+	neg := p < 0
+	xm := *m.Clone()
+
+	for i := len(xm) - 1; i >= 0; i-- {
+		if neg {
+			xm[i]--
+		} else {
+			xm[i]++
+		}
+		if xm[i] > 0 {
+			return FromByteArray(xm)
+		}
+	}
+	return &xm
+}
+
+// Next returns the next MACAddress after the current MACAddress.
+func (m *MACAddress) Next() *MACAddress {
+	return m.move(1)
+}
+
+// Previous returns the previous MACAddress before the current MACAddress.
+func (m *MACAddress) Previous() *MACAddress {
+	return m.move(-1)
 }
 
 // Mask returns the result of masking the MACAddress with the input mask (which is also a
@@ -123,9 +161,46 @@ func (m *MACAddress) Mask(mask *MACAddress) *MACAddress {
 }
 
 // Equal determines if an input MACAddress is equal to this MACAddress.
-func (m *MACAddress) Equal(o *MACAddress) (r bool) {
+func (m *MACAddress) Equal(o *MACAddress) bool {
+	if m == nil || o == nil {
+		return false
+	}
 	c := bytes.Compare(*m, *o)
 	return c == 0
+}
+
+// GreaterThan determines if this MACAddress is greater than an input MACAddress.
+func (m *MACAddress) GreaterThan(o *MACAddress) bool {
+	if m == nil || o == nil {
+		return false
+	}
+	thisI := m.Int()
+	thatI := o.Int()
+	return thisI > thatI
+}
+
+// LessThan determines if this MACAddress is less than an input MACAddress.
+func (m *MACAddress) LessThan(o *MACAddress) bool {
+	if m == nil || o == nil {
+		return false
+	}
+	thisI := m.Int()
+	thatI := o.Int()
+	return thisI < thatI
+}
+
+// GEqual determines if this MACAddress is greater than or equal to an input MACAddress.
+func (m *MACAddress) GEqual(o *MACAddress) bool {
+	g := m.GreaterThan(o)
+	e := m.Equal(o)
+	return g || e
+}
+
+// GEqual determines if this MACAddress is less than or equal to an input MACAddress.
+func (m *MACAddress) LEqual(o *MACAddress) bool {
+	l := m.LessThan(o)
+	e := m.Equal(o)
+	return l || e
 }
 
 // Format formats a MACAddress according to a string template. For example, a template of

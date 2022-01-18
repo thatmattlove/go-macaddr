@@ -6,11 +6,11 @@ import (
 )
 
 // byteArrayToInt converts a byte array to an integer.
-func byteArrayToInt(arr []byte) int {
-	var res int
+func byteArrayToInt(arr []byte) int64 {
+	var res int64
 	for _, v := range arr {
 		res <<= 8
-		res |= int(v)
+		res |= int64(v)
 	}
 	return res
 }

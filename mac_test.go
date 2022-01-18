@@ -50,12 +50,14 @@ func Test_MACAddress(t *testing.T) {
 	assert.Nil(t, err)
 	t.Run("Int() returns int", func(t *testing.T) {
 		i := m.Int()
-		assert.Equal(t, i, 1250999896491)
+		var e int64 = 1250999896491
+		assert.Equal(t, e, i)
 	})
 	t.Run("Int() returns 0", func(t *testing.T) {
 		var m *MACAddress
 		i := m.Int()
-		assert.Equal(t, i, 0)
+		var e int64 = 0
+		assert.Equal(t, e, i)
 	})
 	t.Run("Mask() works properly", func(t *testing.T) {
 		macOut := "01:23:45:00:00:00"
@@ -115,6 +117,85 @@ func Test_MACAddress(t *testing.T) {
 	t.Run("MACAddress.ByteString() 1", func(t *testing.T) {
 		e := "{1,35,69,103,137,171}"
 		assert.Equal(t, e, m.ByteString())
+	})
+	t.Run("MACAddress.move() nil", func(t *testing.T) {
+		var m *MACAddress
+		assert.Nil(t, m.move(1))
+	})
+	t.Run("MACAddress.Next()", func(t *testing.T) {
+		e := MustParseMACAddress("01:23:45:67:89:ac")
+		assert.Equal(t, e, m.Next())
+	})
+	t.Run("MACAddress.Previous()", func(t *testing.T) {
+		e := MustParseMACAddress("01:23:45:67:89:aa")
+		assert.Equal(t, e, m.Previous())
+	})
+	t.Run("MACAddress.GreaterThan() nil", func(t *testing.T) {
+		var m *MACAddress
+		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.GreaterThan(&MACAddress{}))
+		assert.False(t, mm.GreaterThan(nil))
+	})
+	t.Run("MACAddress.GreaterThan() 1", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		assert.True(t, m.GreaterThan(e))
+	})
+	t.Run("MACAddress.GreaterThan() 2", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		assert.False(t, m.GreaterThan(e))
+	})
+	// LessThan()
+	t.Run("MACAddress.LessThan() nil", func(t *testing.T) {
+		var m *MACAddress
+		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.LessThan(&MACAddress{}))
+		assert.False(t, mm.LessThan(nil))
+	})
+	t.Run("MACAddress.LessThan() 1", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		assert.True(t, m.LessThan(e))
+	})
+	t.Run("MACAddress.LessThan() 2", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		assert.False(t, m.LessThan(e))
+	})
+	// GEqual()
+	t.Run("MACAddress.GEqual() nil", func(t *testing.T) {
+		var m *MACAddress
+		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.GEqual(&MACAddress{}))
+		assert.False(t, mm.GEqual(nil))
+	})
+	t.Run("MACAddress.GEqual() 1", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		assert.True(t, m.GEqual(e))
+	})
+	t.Run("MACAddress.GEqual() 2", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		assert.False(t, m.GEqual(e))
+	})
+	t.Run("MACAddress.GEqual() 3", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xab}
+		assert.True(t, m.GEqual(e))
+	})
+	// LEqual()
+	t.Run("MACAddress.LEqual() nil", func(t *testing.T) {
+		var m *MACAddress
+		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.LEqual(&MACAddress{}))
+		assert.False(t, mm.LEqual(nil))
+	})
+	t.Run("MACAddress.LEqual() 1", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		assert.True(t, m.LEqual(e))
+	})
+	t.Run("MACAddress.LEqual() 2", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		assert.False(t, m.LEqual(e))
+	})
+	t.Run("MACAddress.LEqual() 3", func(t *testing.T) {
+		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xab}
+		assert.True(t, m.LEqual(e))
 	})
 }
 
@@ -275,4 +356,60 @@ func ExampleMACAddress_ByteString() {
 	fmt.Println(byteString)
 	// Output:
 	// {0,0,94,0,83,171}
+}
+
+func ExampleMACAddress_Next() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	next := mac.Next()
+	fmt.Println(next.String())
+	// Output:
+	// 00:00:5e:00:53:ac
+}
+
+func ExampleMACAddress_Previous() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	prev := mac.Previous()
+	fmt.Println(prev.String())
+	// Output:
+	// 00:00:5e:00:53:aa
+}
+
+func ExampleMACAddress_GreaterThan() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	other := MustParseMACAddress("00:00:5e:00:53:09")
+	fmt.Println(mac.GreaterThan(other))
+	fmt.Println(other.GreaterThan(mac))
+	// Output:
+	// true
+	// false
+}
+
+func ExampleMACAddress_LessThan() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	other := MustParseMACAddress("00:00:5e:00:53:ff")
+	fmt.Println(mac.LessThan(other))
+	fmt.Println(other.LessThan(mac))
+	// Output:
+	// true
+	// false
+}
+
+func ExampleMACAddress_GEqual() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	other := MustParseMACAddress("00:00:5e:00:53:09")
+	fmt.Println(mac.GEqual(other))
+	fmt.Println(mac.GEqual(mac))
+	// Output:
+	// true
+	// true
+}
+
+func ExampleMACAddress_LEqual() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	other := MustParseMACAddress("00:00:5e:00:53:ff")
+	fmt.Println(mac.LEqual(other))
+	fmt.Println(mac.LEqual(mac))
+	// Output:
+	// true
+	// true
 }

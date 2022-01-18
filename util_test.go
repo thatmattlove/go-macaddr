@@ -108,7 +108,8 @@ func Test_decToInt(t *testing.T) {
 func Test_byteArrayToInt(t *testing.T) {
 	t.Run("byteArrayToInt works", func(t *testing.T) {
 		r := byteArrayToInt([]byte{0xff})
-		assert.Equal(t, 255, r)
+		var e int64 = 255
+		assert.Equal(t, e, r)
 	})
 }
 
