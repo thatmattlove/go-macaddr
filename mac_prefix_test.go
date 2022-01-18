@@ -141,14 +141,13 @@ func Test_MACPrefix(t *testing.T) {
 		assert.Nil(t, m)
 		assert.NotNil(t, e)
 	})
-	t.Run("MACPrefix.Start() nil prefix", func(t *testing.T) {
+	t.Run("MACPrefix.First() nil prefix", func(t *testing.T) {
 		var mp *MACPrefix
-		assert.Nil(t, mp.Last())
+		assert.Nil(t, mp.First())
 	})
 	t.Run("MACPrefix.First() 1", func(t *testing.T) {
 		e := MustParseMACAddress("01:23:45:00:00:00")
-		l := mp.First()
-		assert.Equal(t, e, l)
+		assert.Equal(t, e, mp.First())
 	})
 	t.Run("MACPrefix.Last() nil prefix", func(t *testing.T) {
 		var mp *MACPrefix
@@ -156,8 +155,12 @@ func Test_MACPrefix(t *testing.T) {
 	})
 	t.Run("MACPrefix.Last() 1", func(t *testing.T) {
 		e := MustParseMACAddress("01:23:45:ff:ff:ff")
-		l := mp.Last()
-		assert.Equal(t, e, l)
+		assert.Equal(t, e, mp.Last())
+	})
+	t.Run("MACPrefix.Last() 2", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("00:11:22:30:00:00/28")
+		e := MustParseMACAddress("00:11:22:3f:ff:ff")
+		assert.Equal(t, e, mp.Last())
 	})
 	t.Run("MACPrefix.Count() nil prefix", func(t *testing.T) {
 		var mp *MACPrefix
@@ -189,8 +192,38 @@ func Test_MACPrefix(t *testing.T) {
 	})
 	t.Run("MACPrefix.WildcardMask() 2", func(t *testing.T) {
 		_, mp := MustParseMACPrefix("01:23:45:67:89:ab/28")
-		e := MustParseMACAddress("00:00:f0:ff:ff:ff")
+		e := MustParseMACAddress("00:00:00:0f:ff:ff")
 		assert.Equal(t, e, mp.WildcardMask())
+	})
+	t.Run("MACPrefix.Iter() nil prefix", func(t *testing.T) {
+		var mp *MACPrefix
+		assert.Nil(t, mp.Iter())
+	})
+	t.Run("MACPrefix.Iter()", func(t *testing.T) {
+		_, mp := MustParseMACPrefix("01:23:45:67:89:00/44")
+		addrs := []MACAddress{
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x00},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x01},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x02},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x03},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x04},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x05},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x06},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x07},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x08},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x09},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x0a},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x0b},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x0c},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x0d},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x0e},
+			{0x1, 0x23, 0x45, 0x67, 0x89, 0x0f},
+		}
+		iter := mp.Iter()
+		for i := 0; iter.Next(); i++ {
+			e := addrs[i]
+			assert.Equal(t, &e, iter.Value())
+		}
 	})
 }
 
@@ -353,4 +386,29 @@ func ExampleMACPrefix_WildcardMask() {
 	fmt.Println(macPrefix.WildcardMask())
 	// Output:
 	// 00:00:00:ff:ff:ff
+}
+
+func ExampleMACPrefix_Iter() {
+	_, macPrefix := MustParseMACPrefix("00:00:5e:00:53:00/44")
+	iter := macPrefix.Iter()
+	for iter.Next() {
+		fmt.Println(iter.Value())
+	}
+	// Output:
+	// 00:00:5e:00:53:00
+	// 00:00:5e:00:53:01
+	// 00:00:5e:00:53:02
+	// 00:00:5e:00:53:03
+	// 00:00:5e:00:53:04
+	// 00:00:5e:00:53:05
+	// 00:00:5e:00:53:06
+	// 00:00:5e:00:53:07
+	// 00:00:5e:00:53:08
+	// 00:00:5e:00:53:09
+	// 00:00:5e:00:53:0a
+	// 00:00:5e:00:53:0b
+	// 00:00:5e:00:53:0c
+	// 00:00:5e:00:53:0d
+	// 00:00:5e:00:53:0e
+	// 00:00:5e:00:53:0f
 }

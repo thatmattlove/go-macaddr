@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+type MACPrefixIterator struct {
+	err     error
+	runs    int
+	prefix  *MACPrefix
+	last    *MACAddress
+	current *MACAddress
+}
+
 // MACPrefix represents a MAC Address prefix or range, e.g. 00:00:5e:00:00:00/24 (with a range of
 // 00:00:5e:00:00:00-00:00:5e:ff:ff:ff).
 type MACPrefix struct {
@@ -137,7 +145,7 @@ func (p *MACPrefix) First() (mac *MACAddress) {
 	if p == nil {
 		return nil
 	}
-	return p.MAC
+	return p.MAC.Clone()
 }
 
 // Last returns the last MAC Address in a MACPrefix.
@@ -145,12 +153,12 @@ func (p *MACPrefix) Last() (mac *MACAddress) {
 	if p == nil {
 		return nil
 	}
-	last := make([]byte, len(*p.MAC))
-	r := reverseBytes(*p.Mask)
+	last := make([]byte, _macByteLen)
+	w := *p.WildcardMask()
 	for i, b := range *p.MAC {
-		last[i] = b + r[i]
+		last[i] = b + w[i]
 	}
-	mac = FromByteArray(last)
+	mac = FromBytes(last[0], last[1], last[2], last[3], last[4], last[5])
 	return
 }
 
@@ -173,8 +181,49 @@ func (p *MACPrefix) WildcardMask() (mask *MACAddress) {
 	if p == nil {
 		return nil
 	}
-	mask = FromByteArray(reverseBytes(*p.Mask))
+	wc := make([]byte, len(*p.Mask))
+	for pos, b := range *p.Mask {
+		wc[pos] = 0xff - b
+	}
+	mask = FromByteArray(wc)
 	return
+}
+
+// Next iterates through the MACPrefix range.
+func (i *MACPrefixIterator) Next() bool {
+	if i == nil || i.prefix == nil || i.err != nil {
+		return false
+	}
+
+	if i.runs > 0 {
+		i.current = i.current.Next()
+	}
+	i.runs++
+
+	return i.current.LEqual(i.last)
+}
+
+// Value returns the current iteration value.
+func (i *MACPrefixIterator) Value() *MACAddress {
+	if i == nil || i.err != nil || i.prefix == nil {
+		panic(fmt.Errorf("cannot call Iter() after iterator has finished"))
+	}
+	return i.current
+}
+
+// Iter creates an iterator for the MACPrefix.
+func (p *MACPrefix) Iter() *MACPrefixIterator {
+	if p == nil {
+		return nil
+	}
+	var err error
+	return &MACPrefixIterator{
+		prefix:  p,
+		last:    p.Last(),
+		current: p.First(),
+		err:     err,
+		runs:    0,
+	}
 }
 
 // prefixLength is adapted from:
