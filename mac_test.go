@@ -108,6 +108,14 @@ func Test_MACAddress(t *testing.T) {
 		oui := m.OUI()
 		assert.Equal(t, _nilStr, oui)
 	})
+	t.Run("MACAddress.ByteString() nil", func(t *testing.T) {
+		var m *MACAddress
+		assert.Equal(t, _nilStr, m.ByteString())
+	})
+	t.Run("MACAddress.ByteString() 1", func(t *testing.T) {
+		e := "{1,35,69,103,137,171}"
+		assert.Equal(t, e, m.ByteString())
+	})
 }
 
 func Test_MaskFromPrefixLen(t *testing.T) {
@@ -259,4 +267,12 @@ func ExampleMACAddress_OUI() {
 	fmt.Println(oui)
 	// Output:
 	// 00:00:5e
+}
+
+func ExampleMACAddress_ByteString() {
+	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	byteString := mac.ByteString()
+	fmt.Println(byteString)
+	// Output:
+	// {0,0,94,0,83,171}
 }

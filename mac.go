@@ -94,6 +94,18 @@ func (m *MACAddress) Int() int {
 	return byteArrayToInt(*m)
 }
 
+// ByteString returns a string representation of each MAC Address byte.
+func (m *MACAddress) ByteString() string {
+	if m == nil {
+		return _nilStr
+	}
+	bsa := []string{}
+	for _, b := range *m {
+		bsa = append(bsa, fmt.Sprint(b))
+	}
+	return fmt.Sprintf("{%s}", strings.Join(bsa, ","))
+}
+
 // Mask returns the result of masking the MACAddress with the input mask (which is also a
 // MACAddress).
 func (m *MACAddress) Mask(mask *MACAddress) *MACAddress {
