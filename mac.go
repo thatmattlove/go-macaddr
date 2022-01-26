@@ -60,7 +60,7 @@ func MaskFromPrefixLen(l int) *MACAddress {
 	return FromByteArray(ba)
 }
 
-// Create a MACAddress object directly from bytes.
+// FromBytes creates a MACAddress object directly from bytes.
 func FromBytes(one, two, three, four, five, six byte) (m *MACAddress) {
 	mac := make(MACAddress, _macByteLen)
 	for i, b := range []byte{one, two, three, four, five, six} {
@@ -69,7 +69,7 @@ func FromBytes(one, two, three, four, five, six byte) (m *MACAddress) {
 	return &mac
 }
 
-// Create a MACAddress object directly from a byte array.
+// FromByteArray creates a MACAddress object directly from a byte array.
 func FromByteArray(b []byte) (m *MACAddress) {
 	return FromBytes(b[0], b[1], b[2], b[3], b[4], b[5])
 }
@@ -106,6 +106,7 @@ func (m *MACAddress) ByteString() string {
 	return fmt.Sprintf("{%s}", strings.Join(bsa, ","))
 }
 
+// Clone creates an unlinked copy of the MAC Address.
 func (m *MACAddress) Clone() *MACAddress {
 	if m == nil {
 		return nil
@@ -196,7 +197,7 @@ func (m *MACAddress) GEqual(o *MACAddress) bool {
 	return g || e
 }
 
-// GEqual determines if this MACAddress is less than or equal to an input MACAddress.
+// LEqual determines if this MACAddress is less than or equal to an input MACAddress.
 func (m *MACAddress) LEqual(o *MACAddress) bool {
 	l := m.LessThan(o)
 	e := m.Equal(o)

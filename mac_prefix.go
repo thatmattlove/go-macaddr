@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// MACPrefixIterator tracks iteration state while iterating through a MACPrefix.
 type MACPrefixIterator struct {
 	err     error
 	runs    int
