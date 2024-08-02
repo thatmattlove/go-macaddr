@@ -1,4 +1,4 @@
-package macaddr
+package macaddr_test
 
 import (
 	"fmt"
@@ -6,19 +6,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/thatmattlove/go-macaddr"
 	"github.com/thatmattlove/go-macaddr/internal/constant"
 	"github.com/thatmattlove/go-macaddr/internal/read"
 )
 
-func Test_MustParseMACAddress(t *testing.T) {
-	t.Run("MustParseMACAddress should panic", func(t *testing.T) {
+func TestMustParseMACAddress(t *testing.T) {
+	t.Run("panic", func(t *testing.T) {
 		assert.Panics(t, func() {
-			MustParseMACAddress("this should panic")
+			macaddr.MustParseMACAddress("this should panic")
 		})
 	})
-	t.Run("MustParseMACAddress should not panic", func(t *testing.T) {
+	t.Run("no panic", func(t *testing.T) {
 		assert.NotPanics(t, func() {
-			MustParseMACAddress("01:23:45:67:89:ab")
+			macaddr.MustParseMACAddress("01:23:45:67:89:ab")
 		})
 	})
 }
@@ -34,23 +35,29 @@ func Test_ParseMACAddress(t *testing.T) {
 	}
 	for i, p := range tests {
 		e := p[1]
-		t.Run(fmt.Sprintf("ParseMACAddress '%d'", i+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("parse %d", i+1), func(t *testing.T) {
 			t.Parallel()
-			r, err := ParseMACAddress(p[0])
+			r, err := macaddr.ParseMACAddress(p[0])
 			require.NoError(t, err)
 			assert.Equal(t, r.String(), e)
 		})
 	}
-	t.Run("ParseMACAddress returns error", func(t *testing.T) {
-		t.Parallel()
-		_, err := ParseMACAddress("0123.4567.89az")
-		require.Error(t, err)
-	})
+	errs := []string{
+		"0123.4567.89az",
+		"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+	}
+	for i, s := range errs {
+		t.Run(fmt.Sprintf("error %d", i+1), func(t *testing.T) {
+			t.Parallel()
+			_, err := macaddr.ParseMACAddress(s)
+			require.Error(t, err)
+		})
+	}
 }
 
 func Test_MACAddress(t *testing.T) {
 	s := "01:23:45:67:89:ab"
-	m, err := ParseMACAddress(s)
+	m, err := macaddr.ParseMACAddress(s)
 	assert.Nil(t, err)
 	t.Run("Int() returns int", func(t *testing.T) {
 		t.Parallel()
@@ -60,7 +67,7 @@ func Test_MACAddress(t *testing.T) {
 	})
 	t.Run("Int() returns 0", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
+		var m *macaddr.MACAddress
 		i := m.Int()
 		var e int64 = 0
 		assert.Equal(t, e, i)
@@ -68,20 +75,20 @@ func Test_MACAddress(t *testing.T) {
 	t.Run("Mask() works properly", func(t *testing.T) {
 		t.Parallel()
 		macOut := "01:23:45:00:00:00"
-		maskIn := MustParseMACAddress("ff:ff:ff:00:00:00")
+		maskIn := macaddr.MustParseMACAddress("ff:ff:ff:00:00:00")
 		maskOut := m.Mask(maskIn)
 		assert.Equal(t, macOut, maskOut.String())
 	})
 	t.Run("Mask() returns nil", func(t *testing.T) {
 		t.Parallel()
-		maskIn := MACAddress{}
+		maskIn := macaddr.MACAddress{}
 		maskOut := m.Mask(&maskIn)
 		assert.Nil(t, maskOut)
 	})
 	t.Run("MACAddress.Equal()", func(t *testing.T) {
 		t.Parallel()
-		et := MustParseMACAddress(s)
-		ef := MustParseMACAddress("12:34:56:78:9a:bc")
+		et := macaddr.MustParseMACAddress(s)
+		ef := macaddr.MustParseMACAddress("12:34:56:78:9a:bc")
 		assert.True(t, m.Equal(et))
 		assert.False(t, m.Equal(ef))
 	})
@@ -91,7 +98,7 @@ func Test_MACAddress(t *testing.T) {
 	})
 	t.Run("MACAddress.String() returns nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
+		var m *macaddr.MACAddress
 		assert.Equal(t, constant.NilStr, m.String())
 	})
 	t.Run("MACAddress.Dots()", func(t *testing.T) {
@@ -118,19 +125,19 @@ func Test_MACAddress(t *testing.T) {
 	})
 	t.Run("MACAddress.OUI() 3", func(t *testing.T) {
 		t.Parallel()
-		m := MustParseMACAddress("00:55:DA:80:01:23")
+		m := macaddr.MustParseMACAddress("00:55:DA:80:01:23")
 		oui := m.OUI(28)
 		assert.Equal(t, "00:55:da:80:00:00/28", oui)
 	})
 	t.Run("MACAddress.OUI() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
+		var m *macaddr.MACAddress
 		oui := m.OUI()
 		assert.Equal(t, constant.NilStr, oui)
 	})
 	t.Run("MACAddress.ByteString() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
+		var m *macaddr.MACAddress
 		assert.Equal(t, constant.NilStr, m.ByteString())
 	})
 	t.Run("MACAddress.ByteString() 1", func(t *testing.T) {
@@ -140,148 +147,148 @@ func Test_MACAddress(t *testing.T) {
 	})
 	t.Run("MACAddress.Clone() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
+		var m *macaddr.MACAddress
 		assert.Nil(t, m.Clone())
 	})
 	t.Run("MACAddress.Next() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
+		var m *macaddr.MACAddress
 		assert.Nil(t, m.Next())
 	})
 	t.Run("MACAddress.Next()", func(t *testing.T) {
 		t.Parallel()
 
-		e := MustParseMACAddress("01:23:45:67:89:ac")
+		e := macaddr.MustParseMACAddress("01:23:45:67:89:ac")
 		assert.Equal(t, e, m.Next())
 
-		m := MustParseMACAddress("ff:ff:ff:ff:ff:ff")
-		e = MustParseMACAddress("ff:ff:ff:ff:ff:ff")
+		m := macaddr.MustParseMACAddress("ff:ff:ff:ff:ff:ff")
+		e = macaddr.MustParseMACAddress("ff:ff:ff:ff:ff:ff")
 		assert.Equal(t, e, m.Next())
 
-		m = MustParseMACAddress("ff:ff:ff:ff:fe:ff")
-		e = MustParseMACAddress("ff:ff:ff:ff:ff:00")
+		m = macaddr.MustParseMACAddress("ff:ff:ff:ff:fe:ff")
+		e = macaddr.MustParseMACAddress("ff:ff:ff:ff:ff:00")
 		assert.Equal(t, e, m.Next())
 	})
 	t.Run("MACAddress.Previous()", func(t *testing.T) {
 		t.Parallel()
 
-		e := MustParseMACAddress("01:23:45:67:89:aa")
+		e := macaddr.MustParseMACAddress("01:23:45:67:89:aa")
 		assert.Equal(t, e, m.Previous())
 
-		m := MustParseMACAddress("00:00:00:00:00:00")
-		e = MustParseMACAddress("00:00:00:00:00:00")
+		m := macaddr.MustParseMACAddress("00:00:00:00:00:00")
+		e = macaddr.MustParseMACAddress("00:00:00:00:00:00")
 		assert.Equal(t, e, m.Previous())
 
-		m = MustParseMACAddress("ff:ff:ff:ff:ff:01")
-		e = MustParseMACAddress("ff:ff:ff:ff:ff:00")
+		m = macaddr.MustParseMACAddress("ff:ff:ff:ff:ff:01")
+		e = macaddr.MustParseMACAddress("ff:ff:ff:ff:ff:00")
 		assert.Equal(t, e, m.Previous())
 	})
 	t.Run("MACAddress.GreaterThan() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
-		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
-		assert.False(t, m.GreaterThan(&MACAddress{}))
+		var m *macaddr.MACAddress
+		mm := macaddr.FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.GreaterThan(&macaddr.MACAddress{}))
 		assert.False(t, mm.GreaterThan(nil))
 	})
 	t.Run("MACAddress.GreaterThan() 1", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
 		assert.True(t, m.GreaterThan(e))
 	})
 	t.Run("MACAddress.GreaterThan() 2", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
 		assert.False(t, m.GreaterThan(e))
 	})
 	// LessThan()
 	t.Run("MACAddress.LessThan() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
-		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
-		assert.False(t, m.LessThan(&MACAddress{}))
+		var m *macaddr.MACAddress
+		mm := macaddr.FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.LessThan(&macaddr.MACAddress{}))
 		assert.False(t, mm.LessThan(nil))
 	})
 	t.Run("MACAddress.LessThan() 1", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
 		assert.True(t, m.LessThan(e))
 	})
 	t.Run("MACAddress.LessThan() 2", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
 		assert.False(t, m.LessThan(e))
 	})
 	// GEqual()
 	t.Run("MACAddress.GEqual() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
-		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
-		assert.False(t, m.GEqual(&MACAddress{}))
+		var m *macaddr.MACAddress
+		mm := macaddr.FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.GEqual(&macaddr.MACAddress{}))
 		assert.False(t, mm.GEqual(nil))
 	})
 	t.Run("MACAddress.GEqual() 1", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
 		assert.True(t, m.GEqual(e))
 	})
 	t.Run("MACAddress.GEqual() 2", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
 		assert.False(t, m.GEqual(e))
 	})
 	t.Run("MACAddress.GEqual() 3", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xab}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xab}
 		assert.True(t, m.GEqual(e))
 	})
 	// LEqual()
 	t.Run("MACAddress.LEqual() nil", func(t *testing.T) {
 		t.Parallel()
-		var m *MACAddress
-		mm := FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
-		assert.False(t, m.LEqual(&MACAddress{}))
+		var m *macaddr.MACAddress
+		mm := macaddr.FromBytes(0x01, 0x23, 0x45, 0x67, 0x89, 0xab)
+		assert.False(t, m.LEqual(&macaddr.MACAddress{}))
 		assert.False(t, mm.LEqual(nil))
 	})
 	t.Run("MACAddress.LEqual() 1", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaf}
 		assert.True(t, m.LEqual(e))
 	})
 	t.Run("MACAddress.LEqual() 2", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xaa}
 		assert.False(t, m.LEqual(e))
 	})
 	t.Run("MACAddress.LEqual() 3", func(t *testing.T) {
 		t.Parallel()
-		e := &MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xab}
+		e := &macaddr.MACAddress{0x01, 0x23, 0x45, 0x67, 0x89, 0xab}
 		assert.True(t, m.LEqual(e))
 	})
 }
 
 func Test_MaskFromPrefixLen(t *testing.T) {
 	type pair struct {
-		m *MACAddress
+		m *macaddr.MACAddress
 		i int
 	}
 	pairs := []pair{
-		{&MACAddress{0xff, 0xff, 0xff, 0, 0, 0}, 24},
-		{&MACAddress{0xff, 0xff, 0xff, 0xf0, 0, 0}, 28},
-		{&MACAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, 1000},
-		{&MACAddress{0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, 0},
+		{&macaddr.MACAddress{0xff, 0xff, 0xff, 0, 0, 0}, 24},
+		{&macaddr.MACAddress{0xff, 0xff, 0xff, 0xf0, 0, 0}, 28},
+		{&macaddr.MACAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, 1000},
+		{&macaddr.MACAddress{0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, 0},
 	}
 	for i, p := range pairs {
 		p := p
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			t.Parallel()
-			r := MaskFromPrefixLen(p.i)
+			r := macaddr.MaskFromPrefixLen(p.i)
 			assert.Equal(t, p.m, r)
 		})
 	}
 	for i := 0; i <= constant.MacBitLen; i++ {
 		t.Run(fmt.Sprintf("len %d", i), func(t *testing.T) {
 			t.Parallel()
-			r := MaskFromPrefixLen(i)
+			r := macaddr.MaskFromPrefixLen(i)
 			l := read.PrefixLength(*r)
 			assert.Equal(t, i, l)
 		})
@@ -290,9 +297,9 @@ func Test_MaskFromPrefixLen(t *testing.T) {
 }
 
 func Test_FromBytes(t *testing.T) {
-	r := FromBytes(0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa)
-	e := MustParseMACAddress("ff:ee:dd:cc:bb:aa")
-	ne := MustParseMACAddress("01:23:45:67:89:ab")
+	r := macaddr.FromBytes(0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa)
+	e := macaddr.MustParseMACAddress("ff:ee:dd:cc:bb:aa")
+	ne := macaddr.MustParseMACAddress("01:23:45:67:89:ab")
 	t.Run("FromBytes result equals MAC Address", func(t *testing.T) {
 		t.Parallel()
 		assert.Equal(t, r, e)
@@ -304,9 +311,9 @@ func Test_FromBytes(t *testing.T) {
 }
 
 func Test_FromByteArray(t *testing.T) {
-	r := FromByteArray([]byte{0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa})
-	e := MustParseMACAddress("ff:ee:dd:cc:bb:aa")
-	ne := MustParseMACAddress("01:23:45:67:89:ab")
+	r := macaddr.FromByteArray([]byte{0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa})
+	e := macaddr.MustParseMACAddress("ff:ee:dd:cc:bb:aa")
+	ne := macaddr.MustParseMACAddress("01:23:45:67:89:ab")
 	t.Run("FromByteArray result equals MAC Address", func(t *testing.T) {
 		t.Parallel()
 		assert.Equal(t, r, e)
@@ -318,7 +325,7 @@ func Test_FromByteArray(t *testing.T) {
 }
 
 func ExampleParseMACAddress() {
-	mac, err := ParseMACAddress("00:00:5e:00:53:ab")
+	mac, err := macaddr.ParseMACAddress("00:00:5e:00:53:ab")
 	if err != nil {
 		panic(err)
 	}
@@ -328,71 +335,71 @@ func ExampleParseMACAddress() {
 }
 
 func ExampleMustParseMACAddress() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	fmt.Println(mac.String())
 	// Output:
 	// 00:00:5e:00:53:ab
 }
 
 func ExampleFromBytes() {
-	mac := FromBytes(0x00, 0x00, 0x5e, 0x00, 0x53, 0xab)
+	mac := macaddr.FromBytes(0x00, 0x00, 0x5e, 0x00, 0x53, 0xab)
 	fmt.Println(mac.String())
 	// Output:
 	// 00:00:5e:00:53:ab
 }
 
 func ExampleFromByteArray() {
-	mac := FromByteArray([]byte{0x00, 0x00, 0x5e, 0x00, 0x53, 0xab})
+	mac := macaddr.FromByteArray([]byte{0x00, 0x00, 0x5e, 0x00, 0x53, 0xab})
 	fmt.Println(mac.String())
 	// Output:
 	// 00:00:5e:00:53:ab
 }
 
 func ExampleMaskFromPrefixLen() {
-	mask := MaskFromPrefixLen(24)
+	mask := macaddr.MaskFromPrefixLen(24)
 	fmt.Println(mask.String())
 	// Output:
 	// ff:ff:ff:00:00:00
 }
 
 func ExampleMACAddress_String() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	fmt.Println(mac.String())
 	// Output:
 	// 00:00:5e:00:53:ab
 }
 
 func ExampleMACAddress_Dots() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	fmt.Println(mac.Dots())
 	// Output:
 	// 0000.5e00.53ab
 }
 
 func ExampleMACAddress_Dashes() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	fmt.Println(mac.Dashes())
 	// Output:
 	// 00-00-5e-00-53-ab
 }
 
 func ExampleMACAddress_NoSeparators() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	fmt.Println(mac.NoSeparators())
 	// Output:
 	// 00005e0053ab
 }
 
 func ExampleMACAddress_Int() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	fmt.Println(mac.Int())
 	// Output:
 	// 1577079723
 }
 
 func ExampleMACAddress_Mask() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
-	mask := MustParseMACAddress("ff:ff:ff:ff:00:00")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
+	mask := macaddr.MustParseMACAddress("ff:ff:ff:ff:00:00")
 	result := mac.Mask(mask)
 	fmt.Println(result.String())
 	// Output:
@@ -400,9 +407,9 @@ func ExampleMACAddress_Mask() {
 }
 
 func ExampleMACAddress_Equal() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
-	other1 := MustParseMACAddress("00:00:5e:00:53:ab")
-	other2 := MustParseMACAddress("00:00:5e:00:53:ba")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
+	other1 := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
+	other2 := macaddr.MustParseMACAddress("00:00:5e:00:53:ba")
 	fmt.Println(mac.Equal(other1))
 	fmt.Println(mac.Equal(other2))
 	// Output:
@@ -411,7 +418,7 @@ func ExampleMACAddress_Equal() {
 }
 
 func ExampleMACAddress_Format() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	formatted := mac.Format("xx$$xx_-_xx@xx=xx.xx")
 	fmt.Println(formatted)
 	// Output:
@@ -419,7 +426,7 @@ func ExampleMACAddress_Format() {
 }
 
 func ExampleMACAddress_OUI() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	oui := mac.OUI()
 	fmt.Println(oui)
 	// Output:
@@ -427,7 +434,7 @@ func ExampleMACAddress_OUI() {
 }
 
 func ExampleMACAddress_ByteString() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	byteString := mac.ByteString()
 	fmt.Println(byteString)
 	// Output:
@@ -435,7 +442,7 @@ func ExampleMACAddress_ByteString() {
 }
 
 func ExampleMACAddress_Next() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	next := mac.Next()
 	fmt.Println(next.String())
 	// Output:
@@ -443,7 +450,7 @@ func ExampleMACAddress_Next() {
 }
 
 func ExampleMACAddress_Previous() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
 	prev := mac.Previous()
 	fmt.Println(prev.String())
 	// Output:
@@ -451,8 +458,8 @@ func ExampleMACAddress_Previous() {
 }
 
 func ExampleMACAddress_GreaterThan() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
-	other := MustParseMACAddress("00:00:5e:00:53:09")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
+	other := macaddr.MustParseMACAddress("00:00:5e:00:53:09")
 	fmt.Println(mac.GreaterThan(other))
 	fmt.Println(other.GreaterThan(mac))
 	// Output:
@@ -461,8 +468,8 @@ func ExampleMACAddress_GreaterThan() {
 }
 
 func ExampleMACAddress_LessThan() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
-	other := MustParseMACAddress("00:00:5e:00:53:ff")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
+	other := macaddr.MustParseMACAddress("00:00:5e:00:53:ff")
 	fmt.Println(mac.LessThan(other))
 	fmt.Println(other.LessThan(mac))
 	// Output:
@@ -471,8 +478,8 @@ func ExampleMACAddress_LessThan() {
 }
 
 func ExampleMACAddress_GEqual() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
-	other := MustParseMACAddress("00:00:5e:00:53:09")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
+	other := macaddr.MustParseMACAddress("00:00:5e:00:53:09")
 	fmt.Println(mac.GEqual(other))
 	fmt.Println(mac.GEqual(mac))
 	// Output:
@@ -481,8 +488,8 @@ func ExampleMACAddress_GEqual() {
 }
 
 func ExampleMACAddress_LEqual() {
-	mac := MustParseMACAddress("00:00:5e:00:53:ab")
-	other := MustParseMACAddress("00:00:5e:00:53:ff")
+	mac := macaddr.MustParseMACAddress("00:00:5e:00:53:ab")
+	other := macaddr.MustParseMACAddress("00:00:5e:00:53:ff")
 	fmt.Println(mac.LEqual(other))
 	fmt.Println(mac.LEqual(mac))
 	// Output:

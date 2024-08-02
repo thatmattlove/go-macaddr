@@ -3,8 +3,6 @@ package macaddr
 import (
 	"fmt"
 	"math"
-	"strconv"
-	"strings"
 
 	"github.com/thatmattlove/go-macaddr/internal/constant"
 	"github.com/thatmattlove/go-macaddr/internal/convert"
@@ -39,7 +37,11 @@ type MACPrefix struct {
 // ParseMACPrefix returns the original input MAC Address as a valid MACAddress object, the
 // parsed MACPrefix object, and an error if parsing failed.
 func ParseMACPrefix(s string) (mac *MACAddress, mpo *MACPrefix, err error) {
-	mac, l, err := parseMacAddrWithPrefixLen(s)
+	str, l, err := validate.ParseMacAddrWithPrefixLen(s)
+	if err != nil {
+		return nil, nil, err
+	}
+	mac, err = ParseMACAddress(str)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -72,7 +74,6 @@ func (p *MACPrefix) String() string {
 	if p == nil {
 		return constant.NilStr
 	}
-
 	if p.MAC == nil || p.Mask == nil {
 		return constant.NilStr
 	}
@@ -86,15 +87,17 @@ func (p *MACPrefix) String() string {
 // Match attempts to match the MACPrefix to an input string.
 func (p *MACPrefix) Match(i string) (m *MACPrefix, e error) {
 	e = fmt.Errorf("'%v' is not contained within MACPrefix %s", i, p.String())
-	addr, l, err := parseMacAddrWithPrefixLen(i)
+	str, l, err := validate.ParseMacAddrWithPrefixLen(i)
 	if err != nil {
 		return nil, err
 	}
-
+	addr, err := ParseMACAddress(str)
+	if err != nil {
+		return nil, err
+	}
 	if l < p.PrefixLen() {
 		return nil, e
 	}
-
 	if p.Contains(addr) {
 		return p, nil
 	}
@@ -230,33 +233,4 @@ func (p *MACPrefix) Iter() *MACPrefixIterator {
 		err:     err,
 		runs:    0,
 	}
-}
-
-// parseMacAddrWithPrefixLen operates similarly to ParseMACPrefix, however, it returns the
-// validated MAC address object and the prefix length as an integer. If no prefix is provided,
-// a /48 prefix length is assumed.
-func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
-	if !validate.Hex(s) {
-		err = fmt.Errorf("'%v' is an invalid MAC address or prefix", s)
-		return nil, 0, err
-	}
-	i := strings.IndexByte(s, '/')
-	a := s
-	if i < 0 {
-		i = constant.MacBitLen
-	} else {
-		aa, ii := s[:i], s[i+1:]
-		iii, err := strconv.Atoi(ii)
-		if err != nil {
-			iii = constant.MacBitLen
-		}
-		a = aa
-		i = iii
-	}
-	mac, err := ParseMACAddress(a)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return mac, i, nil
 }

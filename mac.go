@@ -19,7 +19,7 @@ import (
 type MACAddress []byte
 
 // ParseMACAddress parses an input string to a valid MACAddress object.
-func ParseMACAddress(i string) (o *MACAddress, err error) {
+func ParseMACAddress(i string) (*MACAddress, error) {
 	if !validate.Hex(i) {
 		return nil, fmt.Errorf("'%v' contains non-hexadecimal characters", i)
 	}
@@ -30,18 +30,18 @@ func ParseMACAddress(i string) (o *MACAddress, err error) {
 			return nil, err
 		}
 	}
-	o = FromByteArray([]byte{hw[0], hw[1], hw[2], hw[3], hw[4], hw[5]})
-	return
+	mac := FromByteArray([]byte{hw[0], hw[1], hw[2], hw[3], hw[4], hw[5]})
+	return mac, nil
 }
 
 // MustParseMACAddress operates identically to ParseMACAddress, but panics on error instead of
 // returning the error. Most ideal for tests.
-func MustParseMACAddress(i string) (o *MACAddress) {
-	o, err := ParseMACAddress(i)
+func MustParseMACAddress(i string) *MACAddress {
+	mac, err := ParseMACAddress(i)
 	if err != nil {
 		panic(err)
 	}
-	return
+	return mac
 }
 
 // MaskFromPrefixLen creates a MACAddress mask from a prefix bit length. For example, a prefix
