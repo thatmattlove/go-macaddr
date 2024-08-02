@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/thatmattlove/go-macaddr/internal/constant"
-	"github.com/thatmattlove/go-macaddr/internal/convert"
-	"github.com/thatmattlove/go-macaddr/internal/read"
-	"github.com/thatmattlove/go-macaddr/internal/validate"
+	"go.mdl.wtf/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr/internal/convert"
+	"go.mdl.wtf/go-macaddr/internal/read"
+	"go.mdl.wtf/go-macaddr/internal/validate"
 )
 
 // MACPrefixIterator tracks iteration state while iterating through a MACPrefix.

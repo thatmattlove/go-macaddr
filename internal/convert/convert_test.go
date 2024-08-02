@@ -7,8 +7,8 @@ import (
 
 	"github.com/jaswdr/faker/v2"
 	"github.com/stretchr/testify/assert"
-	"github.com/thatmattlove/go-macaddr/internal/constant"
-	"github.com/thatmattlove/go-macaddr/internal/convert"
+	"go.mdl.wtf/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr/internal/convert"
 )
 
 func Test_ChunkStr(t *testing.T) {

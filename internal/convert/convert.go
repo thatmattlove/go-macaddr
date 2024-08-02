@@ -1,6 +1,6 @@
 package convert
 
-import "github.com/thatmattlove/go-macaddr/internal/constant"
+import "go.mdl.wtf/go-macaddr/internal/constant"
 
 // ByteArrayToInt converts a byte array to an int64.
 func ByteArrayToInt64(arr []byte) int64 {

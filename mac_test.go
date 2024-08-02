@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thatmattlove/go-macaddr"
-	"github.com/thatmattlove/go-macaddr/internal/constant"
-	"github.com/thatmattlove/go-macaddr/internal/read"
+	"go.mdl.wtf/go-macaddr"
+	"go.mdl.wtf/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr/internal/read"
 )
 
 func TestMustParseMACAddress(t *testing.T) {

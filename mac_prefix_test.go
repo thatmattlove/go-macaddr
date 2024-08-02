@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thatmattlove/go-macaddr"
-	"github.com/thatmattlove/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr"
+	"go.mdl.wtf/go-macaddr/internal/constant"
 )
 
 func Test_MustParseMACPrefix(t *testing.T) {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thatmattlove/go-macaddr/internal/constant"
-	"github.com/thatmattlove/go-macaddr/internal/validate"
+	"go.mdl.wtf/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr/internal/validate"
 )
 
 func Test_Hex(t *testing.T) {

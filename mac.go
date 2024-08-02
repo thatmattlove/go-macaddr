@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/thatmattlove/go-macaddr/internal/constant"
-	"github.com/thatmattlove/go-macaddr/internal/convert"
-	"github.com/thatmattlove/go-macaddr/internal/format"
-	"github.com/thatmattlove/go-macaddr/internal/read"
-	"github.com/thatmattlove/go-macaddr/internal/validate"
+	"go.mdl.wtf/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr/internal/convert"
+	"go.mdl.wtf/go-macaddr/internal/format"
+	"go.mdl.wtf/go-macaddr/internal/read"
+	"go.mdl.wtf/go-macaddr/internal/validate"
 )
 
 // MACAddress represents a single MAC Address, a slice of bytes. Currently, only 48-bit (EUI-48)

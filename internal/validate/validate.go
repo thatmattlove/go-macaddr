@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/thatmattlove/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr/internal/constant"
 )
 
 // Hex ensures all alphanumeric characters in a string are valid hexadecimal characters.

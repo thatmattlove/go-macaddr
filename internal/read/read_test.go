@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/thatmattlove/go-macaddr/internal/read"
+	"go.mdl.wtf/go-macaddr/internal/read"
 )
 
 func Test_PrefixLength(t *testing.T) {

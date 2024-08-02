@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/thatmattlove/go-macaddr/internal/constant"
-	"github.com/thatmattlove/go-macaddr/internal/convert"
+	"go.mdl.wtf/go-macaddr/internal/constant"
+	"go.mdl.wtf/go-macaddr/internal/convert"
 )
 
 // PadRight pads a string with a another string up to n total length. For example, given

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/thatmattlove/go-macaddr/internal/format"
+	"go.mdl.wtf/go-macaddr/internal/format"
 )
 
 func Test_PadRight(t *testing.T) {

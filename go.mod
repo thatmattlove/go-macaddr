@@ -1,4 +1,4 @@
-module github.com/thatmattlove/go-macaddr
+module go.mdl.wtf/go-macaddr
 
 go 1.22
 
