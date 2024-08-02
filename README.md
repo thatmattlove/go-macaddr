@@ -4,7 +4,7 @@
 
 MAC Address & Prefix Utility for Go
 
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/thatmattlove/go-macaddr/test)](https://github.com/thatmattlove/go-macaddr/actions/workflows/test.yml) [![Docs](https://img.shields.io/badge/godoc-reference-007D9C.svg?style=for-the-badge)](https://pkg.go.dev/github.com/thatmattlove/go-macaddr) [![Code Coverage](https://img.shields.io/codecov/c/github/thatmattlove/go-macaddr?style=for-the-badge)](https://codecov.io/gh/thatmattlove/go-macaddr) [![Go Report Card](https://goreportcard.com/badge/github.com/thatmattlove/go-macaddr?style=for-the-badge)](https://goreportcard.com/report/github.com/thatmattlove/go-macaddr)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/thatmattlove/go-macaddr/test.yml?style=for-the-badge)](https://github.com/thatmattlove/go-macaddr/actions/workflows/test.yml) [![Docs](https://img.shields.io/badge/godoc-reference-007D9C.svg?style=for-the-badge)](https://pkg.go.dev/github.com/thatmattlove/go-macaddr) [![Code Coverage](https://img.shields.io/codecov/c/github/thatmattlove/go-macaddr?style=for-the-badge)](https://codecov.io/gh/thatmattlove/go-macaddr) [![Go Report Card](https://goreportcard.com/badge/github.com/thatmattlove/go-macaddr?style=for-the-badge)](https://goreportcard.com/report/github.com/thatmattlove/go-macaddr)
 
 </div>
 
