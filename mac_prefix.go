@@ -104,7 +104,7 @@ func (p *MACPrefix) Match(i string) (m *MACPrefix, e error) {
 // Contains determines if an input MACAddress is contained within this MACPrefix.
 func (p *MACPrefix) Contains(mac *MACAddress) bool {
 	if p == nil {
-		panic(fmt.Errorf("cannot check if MAC '%s' is contained within nil MACPrefix", mac.String()))
+		return false
 	}
 	mask := *p.Mask
 	if x := mac; x != nil {
@@ -247,7 +247,6 @@ func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
 	} else {
 		aa, ii := s[:i], s[i+1:]
 		iii, err := strconv.Atoi(ii)
-
 		if err != nil {
 			iii = constant.MacBitLen
 		}

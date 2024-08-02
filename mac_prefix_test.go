@@ -6,13 +6,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/thatmattlove/go-macaddr/internal/constant"
 )
 
 func Test_MustParseMACPrefix(t *testing.T) {
 	t.Run("MustParseMACPrefix should panic", func(t *testing.T) {
 		assert.Panics(t, func() {
-			MustParseMACAddress("this should panic")
+			MustParseMACPrefix("this should panic")
 		})
 	})
 }
@@ -27,13 +28,13 @@ func Test_ParseMACPrefix(t *testing.T) {
 	})
 	t.Run("ParseMACPrefix errors 1", func(t *testing.T) {
 		_, _, err := ParseMACPrefix("this should error")
-		assert.NotNil(t, err)
+		require.Error(t, err)
 	})
 	t.Run("ParseMACPrefix errors 2", func(t *testing.T) {
 		m, mp, err := ParseMACPrefix("01:23:45:67:89:ab/64")
 		assert.Nil(t, m)
 		assert.Nil(t, mp)
-		assert.NotNil(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -58,6 +59,14 @@ func Test_MACPrefix(t *testing.T) {
 		}
 		assert.Equal(t, constant.NilStr, mp.String())
 	})
+	t.Run("MACPrefix.String() has invalid len", func(t *testing.T) {
+		t.Parallel()
+		pfx := &MACPrefix{
+			Mask: &MACAddress{0xff, 0xff, 0xff, 0xff, 0, 0x5},
+			MAC:  MustParseMACAddress("01:23:45:67:89:ab"),
+		}
+		assert.Equal(t, "01:23:45:67:89:ab/ff:ff:ff:ff:00:05", pfx.String())
+	})
 	t.Run("MACPrefix.Contains() 1", func(t *testing.T) {
 		mc := MustParseMACAddress("01:23:45:ff:ee:dd")
 		assert.True(t, mp.Contains(mc))
@@ -68,11 +77,10 @@ func Test_MACPrefix(t *testing.T) {
 		assert.True(t, mp.Contains(mac))
 	})
 	t.Run("MACPrefix.Contains() errors on nil prefix", func(t *testing.T) {
+		t.Parallel()
 		mc := MustParseMACAddress("01:23:45:ff:ee:dd")
-		var mp MACPrefix
-		assert.Panics(t, func() {
-			mp.Contains(mc)
-		})
+		var mp *MACPrefix
+		assert.False(t, mp.Contains(mc))
 	})
 	t.Run("MACPrefix.Contains() is false when lengths don't match", func(t *testing.T) {
 		m := MACAddress{0xff, 0xff}
@@ -226,6 +234,16 @@ func Test_MACPrefix(t *testing.T) {
 			assert.Equal(t, &e, iter.Value())
 		}
 	})
+	t.Run("MACPrefix.Iter() with nil", func(t *testing.T) {
+		var iter *MACPrefixIterator
+		assert.False(t, iter.Next())
+	})
+	t.Run("MACPrefix.Value() after finished", func(t *testing.T) {
+		iter := &MACPrefixIterator{}
+		require.Panics(t, func() {
+			iter.Value()
+		})
+	})
 }
 
 func Test_parseMacAddrWithPrefixLen(t *testing.T) {
@@ -233,28 +251,39 @@ func Test_parseMacAddrWithPrefixLen(t *testing.T) {
 		m, p, e := parseMacAddrWithPrefixLen("this should error")
 		assert.Nil(t, m)
 		assert.Equal(t, 0, p)
-		assert.NotNil(t, e)
+		require.Error(t, e)
 	})
 	t.Run("parseMacAddrWithPrefixLen 2", func(t *testing.T) {
 		m, p, e := parseMacAddrWithPrefixLen("01:23:45:67:89:ab/28")
 		ms := "01:23:45:67:89:ab"
 		assert.Equal(t, ms, m.String())
 		assert.Equal(t, 28, p)
-		assert.Nil(t, e)
+		require.NoError(t, e)
 	})
 	t.Run("parseMacAddrWithPrefixLen 3", func(t *testing.T) {
 		m, p, e := parseMacAddrWithPrefixLen("00:00:00:00:00:00/0")
 		ms := "00:00:00:00:00:00"
 		assert.Equal(t, ms, m.String())
 		assert.Equal(t, 0, p)
-		assert.Nil(t, e)
+		require.NoError(t, e)
 	})
 	t.Run("parseMacAddrWithPrefixLen 4", func(t *testing.T) {
 		m, p, e := parseMacAddrWithPrefixLen("01:23:45:67:89:ab")
 		ms := "01:23:45:67:89:ab"
 		assert.Equal(t, ms, m.String())
 		assert.Equal(t, constant.MacBitLen, p)
-		assert.Nil(t, e)
+		require.NoError(t, e)
+	})
+	t.Run("parseMacAddrWithPrefixLen 5", func(t *testing.T) {
+		m, p, e := parseMacAddrWithPrefixLen("01:23:45:67:89:ab/ff")
+		ms := "01:23:45:67:89:ab"
+		assert.Equal(t, ms, m.String())
+		assert.Equal(t, constant.MacBitLen, p)
+		require.NoError(t, e)
+	})
+	t.Run("parseMacAddrWithPrefixLen 6", func(t *testing.T) {
+		_, _, err := parseMacAddrWithPrefixLen("01:23:45:67:89:ab:ff:fe:12:34/199")
+		require.Error(t, err)
 	})
 }
 

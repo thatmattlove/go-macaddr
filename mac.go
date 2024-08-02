@@ -10,6 +10,7 @@ import (
 	"github.com/thatmattlove/go-macaddr/internal/constant"
 	"github.com/thatmattlove/go-macaddr/internal/convert"
 	"github.com/thatmattlove/go-macaddr/internal/format"
+	"github.com/thatmattlove/go-macaddr/internal/read"
 	"github.com/thatmattlove/go-macaddr/internal/validate"
 )
 
@@ -54,11 +55,7 @@ func MaskFromPrefixLen(l int) *MACAddress {
 	var str string
 
 	for i := len(bs); i > 0; i -= 8 {
-		if i-8 < 0 {
-			str = string(bs[0:i])
-		} else {
-			str = string(bs[i-8 : i])
-		}
+		str = string(bs[i-8 : i])
 		v, _ := strconv.ParseUint(str, 2, 8)
 		ba = append([]byte{byte(v)}, ba...)
 	}
@@ -125,9 +122,18 @@ func (m *MACAddress) move(p int) *MACAddress {
 	neg := p < 0
 	xm := *m.Clone()
 
+	if neg && read.IsZero(xm) {
+		return &xm
+	}
+
+	if !neg && read.IsAllF(xm) {
+		return &xm
+	}
+
 	for i := len(xm) - 1; i >= 0; i-- {
 		if neg {
 			xm[i]--
+			break
 		} else {
 			xm[i]++
 		}

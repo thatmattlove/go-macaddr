@@ -84,3 +84,9 @@ func Test_CreateFmtString(t *testing.T) {
 		assert.Equal(t, "xxxx.xx:xx-xxxx", r)
 	})
 }
+
+func Test_WithColons(t *testing.T) {
+	t.Parallel()
+	result := format.WithColons("0123456789ab")
+	assert.Equal(t, "01:23:45:67:89:ab", result)
+}

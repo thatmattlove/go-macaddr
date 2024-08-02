@@ -28,3 +28,23 @@ func PrefixLength(mac []byte) int {
 	}
 	return n
 }
+
+// IsZero determines if a byte slice contains all zero bits.
+func IsZero(mac []byte) bool {
+	for i := 0; i < len(mac); i++ {
+		if mac[i] > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// Test_IsAllF determines if a byte slice contains all 0xff bits.
+func IsAllF(mac []byte) bool {
+	for i := 0; i < len(mac); i++ {
+		if mac[i] != 0xff {
+			return false
+		}
+	}
+	return true
+}

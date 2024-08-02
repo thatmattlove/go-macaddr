@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/jaswdr/faker/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/thatmattlove/go-macaddr/internal/constant"
 	"github.com/thatmattlove/go-macaddr/internal/convert"
@@ -27,6 +28,20 @@ func Test_ChunkStr(t *testing.T) {
 		r := convert.ChunkStr("slice", 1)
 		assert.Len(t, r, 5)
 	})
+
+	for i := 0; i < 50; i++ {
+		fake := faker.New()
+		t.Run(fmt.Sprintf("fake %d", i+1), func(t *testing.T) {
+			t.Parallel()
+			s := fake.Hash().SHA256()
+			r := convert.ChunkStr(s, i)
+			for _, ch := range r {
+				assert.NotEmpty(t, ch)
+				assert.NotZero(t, len(ch))
+				assert.LessOrEqual(t, len(ch), i)
+			}
+		})
+	}
 }
 
 func Test_DecToInt(t *testing.T) {
@@ -39,6 +54,15 @@ func Test_DecToInt(t *testing.T) {
 		{"0123", 123},
 		{"1024", 1024},
 	}
+
+	t.Run("zero", func(t *testing.T) {
+		t.Parallel()
+		n, c, ok := convert.DecToInt("")
+		assert.Equal(t, 0, n)
+		assert.Equal(t, 0, c)
+		assert.False(t, ok)
+	})
+
 	for i, p := range tests {
 		p := p
 		t.Run(fmt.Sprintf("%d", i+1), func(t *testing.T) {

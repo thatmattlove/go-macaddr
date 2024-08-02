@@ -27,7 +27,6 @@ func ChunkStr(str string, size int) []string {
 		for _, v := range slice {
 			var tmp rune
 			tmp += v
-			// tmp = append(tmp, v)
 			res = append(res, string(tmp))
 		}
 		return res

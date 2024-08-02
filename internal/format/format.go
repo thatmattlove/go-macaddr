@@ -22,7 +22,7 @@ func PadRight(str string, pad string, count int) string {
 	return str
 }
 
-// reverseString reverses a string. For example, "abc" becomes "cba".
+// ReverseString reverses a string. For example, "abc" becomes "cba".
 func ReverseString(i string) (o string) {
 	rr := []rune(i)
 	var r []rune
@@ -33,7 +33,7 @@ func ReverseString(i string) (o string) {
 	return
 }
 
-// reverseString reverses a string. For example, "abc" becomes "cba".
+// ReverseBytes reverses a byte slice. For example, "abc" becomes "cba".
 func ReverseBytes(i []byte) []byte {
 	if len(i) == 0 {
 		return i
@@ -45,7 +45,7 @@ func ReverseBytes(i []byte) []byte {
 	return o
 }
 
-// createFmtString parses an input string to replace all alphanumeric characters with 'x', so that
+// CreateFmtString parses an input string to replace all alphanumeric characters with 'x', so that
 // any valid MAC Address string can be used as a template.
 func CreateFmtString(s string) (f string) {
 	p := regexp.MustCompile(`[a-zA-Z0-9]`)
@@ -58,7 +58,7 @@ func CreateFmtString(s string) (f string) {
 	return
 }
 
-// padMAC right-pads an input string with zeros to guarantee the string length is 12. For example,
+// PadMAC right-pads an input string with zeros to guarantee the string length is 12. For example,
 // 012345 becomes 012345000000.
 func PadMAC(i string) string {
 	p := regexp.MustCompile(`[^0-9a-fA-F]+`)
@@ -66,7 +66,7 @@ func PadMAC(i string) string {
 	return strings.ToLower(PadRight(r, "0", constant.HexStrLen))
 }
 
-// withColons chunks an input string into n parts of 2 characters, and joins them with colons. For
+// WithColons chunks an input string into n parts of 2 characters, and joins them with colons. For
 // example, 0123456789ab becomes 01:23:45:67:89:ab.
 func WithColons(i string) string {
 	p := convert.ChunkStr(i, 2)
