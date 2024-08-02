@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/thatmattlove/go-macaddr/internal/constant"
 )
 
 func Test_MustParseMACAddress(t *testing.T) {
@@ -81,7 +82,7 @@ func Test_MACAddress(t *testing.T) {
 	})
 	t.Run("MACAddress.String() returns nil", func(t *testing.T) {
 		var m *MACAddress
-		assert.Equal(t, _nilStr, m.String())
+		assert.Equal(t, constant.NilStr, m.String())
 	})
 	t.Run("MACAddress.Dots()", func(t *testing.T) {
 		assert.Equal(t, m.Dots(), "0123.4567.89ab")
@@ -108,11 +109,11 @@ func Test_MACAddress(t *testing.T) {
 	t.Run("MACAddress.OUI() nil", func(t *testing.T) {
 		var m *MACAddress
 		oui := m.OUI()
-		assert.Equal(t, _nilStr, oui)
+		assert.Equal(t, constant.NilStr, oui)
 	})
 	t.Run("MACAddress.ByteString() nil", func(t *testing.T) {
 		var m *MACAddress
-		assert.Equal(t, _nilStr, m.ByteString())
+		assert.Equal(t, constant.NilStr, m.ByteString())
 	})
 	t.Run("MACAddress.ByteString() 1", func(t *testing.T) {
 		e := "{1,35,69,103,137,171}"

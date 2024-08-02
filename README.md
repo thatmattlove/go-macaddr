@@ -1,23 +1,11 @@
 <div align="center">
-    <h3>
-        <code>macaddr</code>
-    </h3>
-    <br/>
-    MAC Address & Prefix Utility for Go
-    <br/>
-    <br/>
-    <a href="https://github.com/thatmattlove/go-macaddr/actions?query=workflow%3Atest">
-        <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/thatmattlove/go-macaddr/test?style=for-the-badge">
-    </a>
-    <a href="https://pkg.go.dev/github.com/thatmattlove/go-macaddr">
-        <img alt="Docs" src="https://img.shields.io/badge/godoc-reference-007D9C.svg?style=for-the-badge">
-    </a>
-    <a href="https://codecov.io/gh/thatmattlove/go-macaddr">
-        <img alt="Code Coverage" src="https://img.shields.io/codecov/c/github/thatmattlove/go-macaddr?style=for-the-badge">
-    </a>
-    <a href="https://goreportcard.com/report/github.com/thatmattlove/go-macaddr">
-        <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/thatmattlove/go-macaddr?style=for-the-badge">
-    </a>
+
+### `macaddr`
+
+MAC Address & Prefix Utility for Go
+
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/thatmattlove/go-macaddr/test)](https://github.com/thatmattlove/go-macaddr/actions/workflows/test.yml) [![Docs](https://img.shields.io/badge/godoc-reference-007D9C.svg?style=for-the-badge)](https://pkg.go.dev/github.com/thatmattlove/go-macaddr) [![Code Coverage](https://img.shields.io/codecov/c/github/thatmattlove/go-macaddr?style=for-the-badge)](https://codecov.io/gh/thatmattlove/go-macaddr) [![Go Report Card](https://goreportcard.com/badge/github.com/thatmattlove/go-macaddr?style=for-the-badge)](https://goreportcard.com/report/github.com/thatmattlove/go-macaddr)
+
 </div>
 
 ## Installation

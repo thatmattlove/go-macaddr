@@ -6,6 +6,11 @@ import (
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/thatmattlove/go-macaddr/internal/constant"
+	"github.com/thatmattlove/go-macaddr/internal/convert"
+	"github.com/thatmattlove/go-macaddr/internal/format"
+	"github.com/thatmattlove/go-macaddr/internal/validate"
 )
 
 // MACAddress represents a single MAC Address, a slice of bytes. Currently, only 48-bit (EUI-48)
@@ -14,12 +19,12 @@ type MACAddress []byte
 
 // ParseMACAddress parses an input string to a valid MACAddress object.
 func ParseMACAddress(i string) (o *MACAddress, err error) {
-	if !validateHex(i) {
+	if !validate.Hex(i) {
 		return nil, fmt.Errorf("'%v' contains non-hexadecimal characters", i)
 	}
 	hw, err := net.ParseMAC(i)
 	if err != nil {
-		hw, err = net.ParseMAC(withColons(padMAC(i)))
+		hw, err = net.ParseMAC(format.WithColons(format.PadMAC(i)))
 		if err != nil {
 			return nil, err
 		}
@@ -41,10 +46,10 @@ func MustParseMACAddress(i string) (o *MACAddress) {
 // MaskFromPrefixLen creates a MACAddress mask from a prefix bit length. For example, a prefix
 // length of 24 would return MAC Address ff:ff:ff:00:00:00.
 func MaskFromPrefixLen(l int) *MACAddress {
-	if l > _macBitLen {
+	if l > constant.MacBitLen {
 		return &MACAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 	}
-	bs := strings.Repeat("1", l) + strings.Repeat("0", _macBitLen-l)
+	bs := strings.Repeat("1", l) + strings.Repeat("0", constant.MacBitLen-l)
 	var ba []byte
 	var str string
 
@@ -62,10 +67,8 @@ func MaskFromPrefixLen(l int) *MACAddress {
 
 // FromBytes creates a MACAddress object directly from bytes.
 func FromBytes(one, two, three, four, five, six byte) (m *MACAddress) {
-	mac := make(MACAddress, _macByteLen)
-	for i, b := range []byte{one, two, three, four, five, six} {
-		mac[i] = b
-	}
+	mac := make(MACAddress, constant.MacByteLen)
+	copy(mac, []byte{one, two, three, four, five, six})
 	return &mac
 }
 
@@ -75,29 +78,29 @@ func FromByteArray(b []byte) (m *MACAddress) {
 }
 
 // String formats the MAC Address with colons, e.g. 'xx:xx:xx:xx:xx:xx'.
-func (m *MACAddress) String() string { return m.Format(_fmtColon) }
+func (m *MACAddress) String() string { return m.Format(constant.FmtColon) }
 
 // Dots formats the MAC Address with dots, e.g. 'xxxx.xxxx.xxxx'.
-func (m *MACAddress) Dots() string { return m.Format(_fmtDot) }
+func (m *MACAddress) Dots() string { return m.Format(constant.FmtDot) }
 
 // Dashes formats the MAC Address with dashes, e.g. 'xx-xx-xx-xx-xx-xx'.
-func (m *MACAddress) Dashes() string { return m.Format(_fmtDash) }
+func (m *MACAddress) Dashes() string { return m.Format(constant.FmtDash) }
 
 // NoSeparators formats the MAC Address with no separators, e.g. 'xx-xx-xx-xx-xx-xx'.
-func (m *MACAddress) NoSeparators() string { return m.Format(_fmtNone) }
+func (m *MACAddress) NoSeparators() string { return m.Format(constant.FmtNone) }
 
 // Int returns an integer representation of a MAC Address.
 func (m *MACAddress) Int() int64 {
 	if m == nil {
 		return 0
 	}
-	return byteArrayToInt(*m)
+	return convert.ByteArrayToInt64(*m)
 }
 
 // ByteString returns a string representation of each MAC Address byte.
 func (m *MACAddress) ByteString() string {
 	if m == nil {
-		return _nilStr
+		return constant.NilStr
 	}
 	bsa := []string{}
 	for _, b := range *m {
@@ -211,21 +214,21 @@ func (m *MACAddress) Format(f string) string {
 		return "<nil>"
 	}
 	var p []string
-	offset := (4 - _macBitLen) & 3
+	offset := (4 - constant.MacBitLen) & 3
 	uc := m.Int() << offset
 
-	fmtStr := createFmtString(reverseString(f))
+	fmtStr := format.CreateFmtString(format.ReverseString(f))
 
 	for _, ch := range fmtStr {
 		if ch == 'x' {
 			n := uc & 0xf
-			p = append(p, _hexDigits[n])
+			p = append(p, constant.HexDigits[n])
 			uc >>= 4
 		} else {
 			p = append(p, string(ch))
 		}
 	}
-	return reverseString(strings.Join(p, ""))
+	return format.ReverseString(strings.Join(p, ""))
 }
 
 // OUI returns the Organizationally Unique Identifier (OUI) of a MACAddress. If a prefix length is
@@ -237,13 +240,13 @@ func (m *MACAddress) OUI(l ...int) string {
 		pl = l[0]
 	}
 	if m == nil {
-		return _nilStr
+		return constant.NilStr
 	}
 	mm := m.Mask(MaskFromPrefixLen(pl))
 
 	if pl <= 24 {
 		s := mm.String()
-		return s[:_hexStrWithColonsLen/2]
+		return s[:constant.HexStrWithColonsLen/2]
 	}
 	return fmt.Sprintf("%s/%d", mm.String(), pl)
 }

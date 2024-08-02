@@ -5,6 +5,11 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/thatmattlove/go-macaddr/internal/constant"
+	"github.com/thatmattlove/go-macaddr/internal/convert"
+	"github.com/thatmattlove/go-macaddr/internal/read"
+	"github.com/thatmattlove/go-macaddr/internal/validate"
 )
 
 // MACPrefixIterator tracks iteration state while iterating through a MACPrefix.
@@ -29,7 +34,7 @@ type MACPrefix struct {
 
 // ParseMACPrefix attempts to parse an input string to a valid MACPrefix object.
 //
-// Return Values
+// # Return Values
 //
 // ParseMACPrefix returns the original input MAC Address as a valid MACAddress object, the
 // parsed MACPrefix object, and an error if parsing failed.
@@ -40,8 +45,8 @@ func ParseMACPrefix(s string) (mac *MACAddress, mpo *MACPrefix, err error) {
 	}
 	ls := fmt.Sprint(l)
 
-	n, i, ok := decToInt(ls)
-	if mac == nil || !ok || i != len(ls) || n < 0 || n > _macBitLen {
+	n, i, ok := convert.DecToInt(ls)
+	if mac == nil || !ok || i != len(ls) || n < 0 || n > constant.MacBitLen {
 		return nil, nil, fmt.Errorf("'%v' is an invalid MAC prefix", s)
 	}
 	m := MaskFromPrefixLen(n)
@@ -65,13 +70,13 @@ func MustParseMACPrefix(s string) (mac *MACAddress, mp *MACPrefix) {
 // String returns a colon-separated string representation of the MACPrefix object.
 func (p *MACPrefix) String() string {
 	if p == nil {
-		return _nilStr
+		return constant.NilStr
 	}
 
 	if p.MAC == nil || p.Mask == nil {
-		return _nilStr
+		return constant.NilStr
 	}
-	l := prefixLength(*p.Mask)
+	l := read.PrefixLength(*p.Mask)
 	if l == -1 {
 		return fmt.Sprintf("%s/%s", p.MAC.String(), p.Mask.String())
 	}
@@ -126,17 +131,17 @@ func (p *MACPrefix) PrefixLen() int {
 	if p == nil {
 		return 0
 	}
-	return prefixLength(*p.Mask)
+	return read.PrefixLength(*p.Mask)
 }
 
 // OUI returns the Organizationally Unique Identifier (OUI) of a MACPrefix.
 func (p *MACPrefix) OUI() string {
 	if p == nil {
-		return _nilStr
+		return constant.NilStr
 	}
 	if p.PrefixLen() <= 24 {
 		s := p.String()
-		return s[:_hexStrWithColonsLen/2]
+		return s[:constant.HexStrWithColonsLen/2]
 	}
 	return p.String()
 }
@@ -154,7 +159,7 @@ func (p *MACPrefix) Last() (mac *MACAddress) {
 	if p == nil {
 		return nil
 	}
-	last := make([]byte, _macByteLen)
+	last := make([]byte, constant.MacByteLen)
 	w := *p.WildcardMask()
 	for i, b := range *p.MAC {
 		last[i] = b + w[i]
@@ -168,7 +173,7 @@ func (p *MACPrefix) Count() int {
 	if p == nil {
 		return 0
 	}
-	exp := _macBitLen - p.PrefixLen()
+	exp := constant.MacBitLen - p.PrefixLen()
 
 	if exp == 0 {
 		return 1
@@ -227,53 +232,24 @@ func (p *MACPrefix) Iter() *MACPrefixIterator {
 	}
 }
 
-// prefixLength is adapted from:
-// https://github.com/golang/go/blob/2639f2f79bda2c3a4e9ef7381ca7de14935e2a4a/src/net/ip.go#L451
-func prefixLength(mac MACAddress) int {
-	var n int
-	for i, v := range mac {
-		if v == 0xff {
-			n += 8
-			continue
-		}
-		// found non-ff byte
-		// count 1 bits
-		for v&0x80 != 0 {
-			n++
-			v <<= 1
-		}
-		// rest must be 0 bits
-		if v != 0 {
-			return -1
-		}
-		for i++; i < len(mac); i++ {
-			if mac[i] != 0 {
-				return -1
-			}
-		}
-		break
-	}
-	return n
-}
-
 // parseMacAddrWithPrefixLen operates similarly to ParseMACPrefix, however, it returns the
 // validated MAC address object and the prefix length as an integer. If no prefix is provided,
 // a /48 prefix length is assumed.
 func parseMacAddrWithPrefixLen(s string) (m *MACAddress, l int, err error) {
-	if !validateHex(s) {
+	if !validate.Hex(s) {
 		err = fmt.Errorf("'%v' is an invalid MAC address or prefix", s)
 		return nil, 0, err
 	}
 	i := strings.IndexByte(s, '/')
 	a := s
 	if i < 0 {
-		i = _macBitLen
+		i = constant.MacBitLen
 	} else {
 		aa, ii := s[:i], s[i+1:]
 		iii, err := strconv.Atoi(ii)
 
 		if err != nil {
-			iii = _macBitLen
+			iii = constant.MacBitLen
 		}
 		a = aa
 		i = iii

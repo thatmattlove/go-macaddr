@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/thatmattlove/go-macaddr/internal/constant"
 )
 
 func Test_MustParseMACPrefix(t *testing.T) {
@@ -48,14 +49,14 @@ func Test_MACPrefix(t *testing.T) {
 	})
 	t.Run("MACPrefix.String() is nil 1", func(t *testing.T) {
 		var mp *MACPrefix
-		assert.Equal(t, _nilStr, mp.String())
+		assert.Equal(t, constant.NilStr, mp.String())
 	})
 	t.Run("MACPrefix.String() is nil 2", func(t *testing.T) {
 		mp := MACPrefix{
 			MAC:  nil,
 			Mask: nil,
 		}
-		assert.Equal(t, _nilStr, mp.String())
+		assert.Equal(t, constant.NilStr, mp.String())
 	})
 	t.Run("MACPrefix.Contains() 1", func(t *testing.T) {
 		mc := MustParseMACAddress("01:23:45:ff:ee:dd")
@@ -98,7 +99,7 @@ func Test_MACPrefix(t *testing.T) {
 	})
 	t.Run("MACPrefix.OUI() nil", func(t *testing.T) {
 		var mp *MACPrefix
-		assert.Equal(t, _nilStr, mp.OUI())
+		assert.Equal(t, constant.NilStr, mp.OUI())
 	})
 	t.Run("MACPrefix.OUI() /24", func(t *testing.T) {
 		_, mp := MustParseMACPrefix("01:23:45:00:00:00/24")
@@ -227,23 +228,6 @@ func Test_MACPrefix(t *testing.T) {
 	})
 }
 
-func Test_PrefixLength(t *testing.T) {
-	type pair struct {
-		MACAddress
-		int
-	}
-	tests := []pair{
-		{MACAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, 48},
-		{MACAddress{0xff, 0xff, 0xff, 0, 0, 0}, 24},
-		{MACAddress{0, 0, 0, 0, 0, 0}, 0},
-	}
-	for i, p := range tests {
-		t.Run(fmt.Sprintf("prefixLength %d", i), func(t *testing.T) {
-			assert.Equal(t, p.int, prefixLength(p.MACAddress))
-		})
-	}
-}
-
 func Test_parseMacAddrWithPrefixLen(t *testing.T) {
 	t.Run("parseMacAddrWithPrefixLen should error", func(t *testing.T) {
 		m, p, e := parseMacAddrWithPrefixLen("this should error")
@@ -269,7 +253,7 @@ func Test_parseMacAddrWithPrefixLen(t *testing.T) {
 		m, p, e := parseMacAddrWithPrefixLen("01:23:45:67:89:ab")
 		ms := "01:23:45:67:89:ab"
 		assert.Equal(t, ms, m.String())
-		assert.Equal(t, _macBitLen, p)
+		assert.Equal(t, constant.MacBitLen, p)
 		assert.Nil(t, e)
 	})
 }
