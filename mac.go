@@ -133,12 +133,21 @@ func (m *MACAddress) move(p int) *MACAddress {
 	for i := len(xm) - 1; i >= 0; i-- {
 		if neg {
 			xm[i]--
-			break
+			// Borrow: if the byte did not underflow (was not 0x00), the
+			// decrement is complete. If it underflowed to 0xff, continue
+			// the loop to borrow from the next more-significant byte,
+			// mirroring the carry propagation of the increment branch.
+			if xm[i] != 0xff {
+				return FromByteArray(xm)
+			}
 		} else {
 			xm[i]++
-		}
-		if xm[i] > 0 {
-			return FromByteArray(xm)
+			// Carry: if the byte did not overflow, the increment is
+			// complete. Otherwise continue the loop to carry into the
+			// next more-significant byte.
+			if xm[i] > 0 {
+				return FromByteArray(xm)
+			}
 		}
 	}
 	return &xm
